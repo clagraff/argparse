@@ -1,7 +1,6 @@
 package parg
 
 import (
-	"bytes"
 	"fmt"
 	"os"
 	"strings"
@@ -61,6 +60,8 @@ func (p *parser) Usage(usage string) *parser {
 }
 
 func (p *parser) ShowHelp() {
+	screenWidth := getScreenWidth()
+
 	var positional []*argument
 	var notPositional []*argument
 	var usage []string
@@ -71,72 +72,105 @@ func (p *parser) ShowHelp() {
 
 	var notPosArgs []string
 	var posArgs []string
+	longest := 0
 
 	for _, arg := range p.Arguments {
 		if arg.IsPositional == false {
 			notPositional = append(notPositional, arg)
+			name := arg.GetUsage()
+			if len(name) > longest {
+				longest = len(name)
+			}
 
 			argUsg := arg.GetUsage()
 			notPosArgs = append(notPosArgs, arg.GetUsage())
 			headerLen = headerLen + len(argUsg)
-			if headerLen+len(argUsg) > 90 {
-				var spacer bytes.Buffer
-				count := 0
-				for count < headerIndent {
-					spacer.WriteString(" ")
-					count++
-				}
+			if headerLen+len(argUsg) > screenWidth {
 				headerLen = headerIndent
-				notPosArgs = append(notPosArgs, join("", "\n", spacer.String()))
+				notPosArgs = append(notPosArgs, join("", "\n", spacer(headerIndent)))
 			}
 		} else {
 			positional = append(positional, arg)
+			name := arg.GetUsage()
+			if len(name) > longest {
+				longest = len(name)
+			}
 
 			argUsg := arg.GetUsage()
 			posArgs = append(posArgs, arg.GetUsage())
 			headerLen = headerLen + len(argUsg)
-			if headerLen+len(argUsg) > 90 {
+			if headerLen+len(argUsg) > screenWidth {
 				headerLen = headerIndent
 				posArgs = append(posArgs, join("", "\n", spacer(headerIndent)))
 			}
 		}
 	}
 
+	longest = longest + 4
+
 	header = append(header, notPosArgs...)
 	header = append(header, posArgs...)
 
-	usage = append(usage, join(" ", header...))
+	usage = append(usage, join(" ", header...), "\n")
+
+	if len(p.UsageText) > 0 {
+		usage = append(usage, "\n", p.UsageText, "\n")
+	}
 
 	if len(positional) > 0 {
 		usage = append(usage, "\n", "positional arguments:", "\n")
 		var names []string
 		var help []string
 
-		longest := 0
-
 		for _, arg := range positional {
-			names = append(names, arg.Name)
+			names = append(names, arg.GetUsage())
 			help = append(help, arg.HelpText)
-			if len(arg.Name) > longest {
-				longest = len(arg.Name)
-			}
 		}
-		longest = longest + 4
 
 		var lines []string
 		for i, name := range names {
 			lines = append(lines, "  ", name)
 			lines = append(lines, spacer(longest-len(name)-2))
-			if longest > 80 {
+			if longest > screenWidth {
 				lines = append(lines, "\n", spacer(longest))
 			}
-			lines = append(lines, help[i])
+			lines = append(lines, help[i], "\n")
+		}
+		usage = append(usage, lines...)
+	}
+
+	if len(notPositional) > 0 {
+		usage = append(usage, "\n", "optional arguments:", "\n")
+		var names []string
+		var help []string
+
+		for _, arg := range notPositional {
+			name := arg.GetUsage()
+
+			names = append(names, name[1:len(name)-1])
+			help = append(help, arg.HelpText)
+		}
+
+		var lines []string
+		for i, name := range names {
+			lines = append(lines, "  ", name)
+			lines = append(lines, spacer(longest-len(name)-2))
+			if longest > screenWidth {
+				lines = append(lines, "\n", spacer(longest))
+			}
+
+			helpLines := wordWrap(help[i], screenWidth-longest)
+			lines = append(lines, helpLines[0], "\n")
+			if len(helpLines) > 1 {
+				for _, helpLine := range helpLines[1:len(helpLines)] {
+					lines = append(lines, spacer(longest), helpLine, "\n")
+				}
+			}
 		}
 		usage = append(usage, lines...)
 	}
 
 	fmt.Println(join("", usage...))
-
 }
 
 func Parser(desc string) *parser {

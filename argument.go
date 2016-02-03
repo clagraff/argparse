@@ -252,7 +252,19 @@ func (a *argument) Type(kind reflect.Kind) *argument {
 	return a
 }
 
-func Argument(name string, action Action) *argument {
-	a := argument{ActionType: action, DestName: name, MetaVarText: []string{name}, Name: name, IsPositional: false, ArgNum: "0"}
+func Argument(name string, help string) *argument {
+	a := argument{ActionType: StoreTrue, DestName: name, MetaVarText: []string{name}, Name: name, IsPositional: false, ArgNum: "0", HelpText: help}
+	return &a
+}
+
+func Flag(name, help string) *argument {
+	a := argument{
+		ActionType: StoreTrue,
+		ArgNum:     "0",
+		DefaultVal: false,
+		DestName:   name,
+		HelpText:   help,
+		Name:       name,
+	}
 	return &a
 }
