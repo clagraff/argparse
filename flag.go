@@ -66,9 +66,6 @@ func (f *Flag) Choices(choices []interface{}) *Flag {
 // Const sets the flag's constant value to the provided interface. A flag's constant value
 // is only used for certain actions. By default, the constant value is `nil`.
 func (f *Flag) Const(value interface{}) *Flag {
-	if f.RequiredKind != reflect.Invalid && reflect.ValueOf(value).Kind() != f.RequiredKind {
-		panic(fmt.Errorf("Constant value: '%v' must be of type: '%s'", value, f.RequiredKind.String()))
-	}
 	f.ConstVal = value
 	return f
 }
@@ -76,9 +73,6 @@ func (f *Flag) Const(value interface{}) *Flag {
 // Default sets the flag's default value. A flag's default value is only used for
 // certain actions. By default, the default value is `nil`.
 func (f *Flag) Default(value interface{}) *Flag {
-	if f.RequiredKind != reflect.Invalid && reflect.ValueOf(value).Kind() != f.RequiredKind {
-		panic(fmt.Errorf("Constant value: '%v' must be of type: '%s'", value, f.RequiredKind.String()))
-	}
 	f.DefaultVal = value
 	return f
 }
