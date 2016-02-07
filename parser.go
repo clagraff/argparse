@@ -13,20 +13,16 @@ type parser struct {
 	PrefixChar      string
 	AddHelpArg      bool
 	AllowAbbrev     bool
-	Arguments       []*argument
+	Flags           []*Flag
+	Values          map[string]interface{}
 }
 
 func (p *parser) AddHelp() *parser {
 	return p.Help(true)
 }
 
-func (p *parser) AddArg(a *argument) *parser {
-	p.Arguments = append(p.Arguments, a)
-	return p
-}
-
-func (p *parser) Char(char string) *parser {
-	p.PrefixChar = char
+func (p *parser) AddArg(f *Flag) *parser {
+	p.Flags = append(p.Flags, f)
 	return p
 }
 
@@ -35,35 +31,21 @@ func (p *parser) Desc(text string) *parser {
 	return p
 }
 
-func (p *parser) Help(enable bool) *parser {
-	p.AddHelpArg = enable
-	return p
+func (p *parser) GetArg(name string) (*Flag, error) {
+	for _, flag := range p.Flags {
+		if flag.PublicName == name {
+			return flag, nil
+		}
+	}
+
+	return nil, fmt.Errorf("No argument named: '%s'", name)
 }
 
-func (p *parser) Path(progPath string) *parser {
-	paths := strings.Split(progPath, string(os.PathSeparator))
-	return p.Prog(paths[len(paths)-1])
-}
-
-func (p *parser) Prog(name string) *parser {
-	p.ProgramName = name
-	return p
-}
-
-func (p *parser) RemoveHelp() *parser {
-	return p.Help(false)
-}
-
-func (p *parser) Usage(usage string) *parser {
-	p.UsageText = usage
-	return p
-}
-
-func (p *parser) ShowHelp() {
+func (p *parser) GetHelp() string {
 	screenWidth := getScreenWidth()
 
-	var positional []*argument
-	var notPositional []*argument
+	var positional []*Flag
+	var notPositional []*Flag
 	var usage []string
 
 	header := []string{"usage:", p.ProgramName}
@@ -74,22 +56,22 @@ func (p *parser) ShowHelp() {
 	var posArgs []string
 	longest := 0
 
-	for _, arg := range p.Arguments {
-		if arg.IsPositional == false {
-			notPositional = append(notPositional, arg)
-			name := arg.GetUsage()
-			if len(name) > longest {
-				longest = len(name)
-			}
+	for _, arg := range p.Flags {
+		//if arg.IsPositional == false {
+		notPositional = append(notPositional, arg)
+		name := arg.GetUsage()
+		if len(name) > longest {
+			longest = len(name)
+		}
 
-			argUsg := arg.GetUsage()
-			notPosArgs = append(notPosArgs, arg.GetUsage())
-			headerLen = headerLen + len(argUsg)
-			if headerLen+len(argUsg) > screenWidth {
-				headerLen = headerIndent
-				notPosArgs = append(notPosArgs, join("", "\n", spacer(headerIndent)))
-			}
-		} else {
+		argUsg := arg.GetUsage()
+		notPosArgs = append(notPosArgs, arg.GetUsage())
+		headerLen = headerLen + len(argUsg)
+		if headerLen+len(argUsg) > screenWidth {
+			headerLen = headerIndent
+			notPosArgs = append(notPosArgs, join("", "\n", spacer(headerIndent)))
+		}
+		/*} else {
 			positional = append(positional, arg)
 			name := arg.GetUsage()
 			if len(name) > longest {
@@ -103,7 +85,7 @@ func (p *parser) ShowHelp() {
 				headerLen = headerIndent
 				posArgs = append(posArgs, join("", "\n", spacer(headerIndent)))
 			}
-		}
+		}*/
 	}
 
 	longest = longest + 4
@@ -170,7 +152,107 @@ func (p *parser) ShowHelp() {
 		usage = append(usage, lines...)
 	}
 
-	fmt.Println(join("", usage...))
+	return join("", usage...)
+}
+
+func (p *parser) Help(enable bool) *parser {
+	p.AddHelpArg = enable
+	return p
+}
+
+func (p *parser) Parse(allArgs ...string) error {
+	p.Values = make(map[string]interface{})
+	for _, flag := range p.Flags {
+		p.Values[flag.DestName] = flag.DefaultVal
+	}
+
+	flagNames, args := extractFlags(allArgs...)
+	for _, flagName := range flagNames {
+		var flag *Flag
+
+		for _, f := range p.Flags {
+			if flagName == f.PublicName {
+				flag = f
+				break
+			}
+		}
+
+		if flag == nil {
+			return fmt.Errorf("flag '%s' is not a valid flag.", flagName)
+		}
+
+		_, err := flag.DesiredAction(p, flag, args...)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+	/*
+		for _, opt := range p.Arguments {
+			if opt.IsPositional {
+				positionals = append(positionals, opt)
+			} else {
+				flags = append(flags, opt)
+			}
+			p.Values[opt.Name] = opt.DefaultVal
+		}
+
+		count := 0
+		max := len(args)
+		for count < max {
+			arg := args[count]
+			if arg == "--" {
+				count = count + 2
+				continue
+			}
+			if isFlagFormat(arg) {
+				flagName := getFlagName(arg)
+				for _, flag := range flags {
+					if flag.Name == flagName {
+						if count+1 < max {
+							_, err := flag.ActionType(p, flag, args[count+1:]...)
+							if err != nil {
+								fmt.Println(err.Error())
+								break
+							}
+						} else {
+							_, err := flag.ActionType(p, flag, "")
+							if err != nil {
+								fmt.Println(err.Error())
+								break
+							}
+						}
+					}
+				}
+			}
+			count++
+		}*/
+}
+
+func (p *parser) Path(progPath string) *parser {
+	paths := strings.Split(progPath, string(os.PathSeparator))
+	return p.Prog(paths[len(paths)-1])
+}
+
+func (p *parser) Prog(name string) *parser {
+	p.ProgramName = name
+	return p
+}
+
+func (p *parser) RemoveHelp() *parser {
+	return p.Help(false)
+}
+
+func (p *parser) Usage(usage string) *parser {
+	p.UsageText = usage
+	return p
+}
+
+func (p *parser) ShowHelp() *parser {
+	fmt.Println(p.GetHelp())
+
+	return p
 }
 
 func Parser(desc string) *parser {
