@@ -7,11 +7,14 @@ import (
 	"strings"
 )
 
+// NewFlag returns a pointer to a new Flag instance, setting the flag's destination
+// name, public name and metavar text to the provided name, and the help text to the
+// provided help string.
 func NewFlag(name, help string) *Flag {
 	f := Flag{
 		ArgNum:        "0",
 		ConstVal:      nil,
-		DefaultVal:    false,
+		DefaultVal:    nil,
 		DesiredAction: StoreTrue,
 		DestName:      name,
 		HelpText:      help,
@@ -23,6 +26,7 @@ func NewFlag(name, help string) *Flag {
 	return &f
 }
 
+// Flag contains the necessary attributes for representing a parsable flag.
 type Flag struct {
 	ArgNum          string
 	ConstVal        interface{}
@@ -32,20 +36,23 @@ type Flag struct {
 	HelpText        string
 	IsRequired      bool
 	MetaVarText     []string
-	PossibleChoices []interface{}
+	PossibleChoices []interface{} // Currently unused. TODO: implement.
 	PublicName      string
 	RequiredKind    reflect.Kind
 }
 
+// Action sets the flag's action to the provided action function.
 func (f *Flag) Action(action Action) *Flag {
 	f.DesiredAction = action
 	return f
 }
 
+// Bool sets the flag's required type as a boolean.
 func (f *Flag) Bool() *Flag {
 	return f.Kind(reflect.Bool)
 }
 
+// Choices appends the provided slice as acceptable arguments for the flag.
 func (f *Flag) Choices(choices []interface{}) *Flag {
 	for _, choice := range choices {
 		if f.RequiredKind != reflect.Invalid && reflect.ValueOf(choice).Kind() != f.RequiredKind {
@@ -56,6 +63,8 @@ func (f *Flag) Choices(choices []interface{}) *Flag {
 	return f
 }
 
+// Const sets the flag's constant value to the provided interface. A flag's constant value
+// is only used for certain actions. By default, the constant value is `nil`.
 func (f *Flag) Const(value interface{}) *Flag {
 	if f.RequiredKind != reflect.Invalid && reflect.ValueOf(value).Kind() != f.RequiredKind {
 		panic(fmt.Errorf("Constant value: '%v' must be of type: '%s'", value, f.RequiredKind.String()))
@@ -64,6 +73,8 @@ func (f *Flag) Const(value interface{}) *Flag {
 	return f
 }
 
+// Default sets the flag's default value. A flag's default value is only used for
+// certain actions. By default, the default value is `nil`.
 func (f *Flag) Default(value interface{}) *Flag {
 	if f.RequiredKind != reflect.Invalid && reflect.ValueOf(value).Kind() != f.RequiredKind {
 		panic(fmt.Errorf("Constant value: '%v' must be of type: '%s'", value, f.RequiredKind.String()))
@@ -72,19 +83,25 @@ func (f *Flag) Default(value interface{}) *Flag {
 	return f
 }
 
+// Dest sets a flag's destination name. This is used as the key for storing the flag's
+// values within the parser.
 func (f *Flag) Dest(name string) *Flag {
 	f.DestName = name
 	return f
 }
 
+// Float sets the flag's required type as a float.
 func (f *Flag) Float() *Flag {
 	return f.Kind(reflect.Float64)
 }
 
+// Float32 sets the flag's required type as a float32.
 func (f *Flag) Float32() *Flag {
 	return f.Kind(reflect.Float32)
 }
 
+// DisplayName returns the flag's public name, prefixed with the appropriate number
+// of hyphen-minus characters.
 func (f *Flag) DisplayName() string {
 	var prefix string
 
@@ -96,6 +113,10 @@ func (f *Flag) DisplayName() string {
 	return join("", prefix, strings.ToLower(f.PublicName))
 }
 
+// GetUsage returns the usage text for the flag. This includes proper formatting
+// of the flag's display name & parameters. For parameters: by default, parameters
+// will be the flag's public name. This can be overridden by modifying the MetaVars
+// slice for the flag.
 func (f *Flag) GetUsage() string {
 	var usage []string
 
@@ -176,19 +197,25 @@ func (f *Flag) GetUsage() string {
 	return join("", usage...)
 }
 
+// Help sets the flag's help/usage text.
 func (f *Flag) Help(text string) *Flag {
 	f.HelpText = text
 	return f
 }
 
+// Int64 sets the flag's required type as a int64.
 func (f *Flag) Int64() *Flag {
 	return f.Kind(reflect.Int64)
 }
 
+// Int32 sets the flag's required type as a int32.
 func (f *Flag) Int32() *Flag {
 	return f.Kind(reflect.Int32)
 }
 
+// MetaVar sets the flag's metavar text to the provided string. Additional
+// metavar strings can be provided, and will be used for flags with more than
+// expected argument.
 func (f *Flag) MetaVar(meta string, metaSlice ...string) *Flag {
 	s := []string{meta}
 	for _, text := range metaSlice {
@@ -199,6 +226,11 @@ func (f *Flag) MetaVar(meta string, metaSlice ...string) *Flag {
 	return f
 }
 
+// Nargs sets the flag's number of expected arguments. Integers represent
+// the absolute number of arguments to be expected. The `?` character represents
+// an expection of zero or one arguments. The `*` character represents an expectation
+// of any number or arguments. The `+` character represents an expectation of one
+// or more arguments.
 func (f *Flag) Nargs(nargs string) *Flag {
 	// TODO: Allow "r"/"R" for remainder args
 	allowed_chars := []string{"?", "*", "+"}
@@ -218,28 +250,35 @@ func (f *Flag) Nargs(nargs string) *Flag {
 	return f
 }
 
+// NotRequired prevents the flag from being required to be present when parsing
+// arguments.
 func (f *Flag) NotRequired() *Flag {
 	f.IsRequired = false
 	return f
 }
 
+// Required enables the flag to required to be present when parsing arguments.
 func (f *Flag) Required() *Flag {
 	f.IsRequired = true
 	return f
 }
 
+// String sets the flag's required type as a string.
 func (f *Flag) String() *Flag {
 	return f.Kind(reflect.String)
 }
 
+// Uint64 sets the flag's required type as a uint64.
 func (f *Flag) Uint64() *Flag {
 	return f.Kind(reflect.Uint64)
 }
 
+// Uint32 sets the flag's required type as a uint32.
 func (f *Flag) Uint32() *Flag {
 	return f.Kind(reflect.Uint32)
 }
 
+// Kind sets the flag's required kind to the provided reflect.Kind constant.
 func (f *Flag) Kind(kind reflect.Kind) *Flag {
 	f.RequiredKind = kind
 	return f
