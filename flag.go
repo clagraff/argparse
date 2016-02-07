@@ -235,8 +235,8 @@ func (f *Flag) MetaVar(meta string, metaSlice ...string) *Flag {
 // or more arguments.
 func (f *Flag) Nargs(nargs string) *Flag {
 	// TODO: Allow "r"/"R" for remainder args
-	allowed_chars := []string{"?", "*", "+"}
-	for _, char := range allowed_chars {
+	allowedChars := []string{"?", "*", "+"}
+	for _, char := range allowedChars {
 		if nargs == char {
 			f.ArgNum = char
 			return f

@@ -8,9 +8,9 @@ import (
 	"strings"
 )
 
-// parser contains program-level settings and information, stores flags,
+// Parser contains program-level settings and information, stores flags,
 // and values collected upon parsing.
-type parser struct {
+type Parser struct {
 	ProgramName string
 	AllowAbbrev bool
 	Flags       []*Flag
@@ -20,7 +20,7 @@ type parser struct {
 
 // AddHelp adds a new flag to output usage information for the current parser
 // and each of its flags.
-func (p *parser) AddHelp() *parser {
+func (p *Parser) AddHelp() *Parser {
 	helpFlag := NewFlag("help", "Display usage information").Action(ShowHelp)
 	shortHelpFlag := NewFlag("h", "Display usage information").Action(ShowHelp).Dest("help")
 
@@ -29,14 +29,14 @@ func (p *parser) AddHelp() *parser {
 }
 
 // AddFlag appends the provided flag to the current parser.
-func (p *parser) AddFlag(f *Flag) *parser {
+func (p *Parser) AddFlag(f *Flag) *Parser {
 	p.Flags = append(p.Flags, f)
 	return p
 }
 
 // GetFlag retrieves the first flag with a public name matching the specified
 // name, or will otherwise return an error.
-func (p *parser) GetFlag(name string) (*Flag, error) {
+func (p *Parser) GetFlag(name string) (*Flag, error) {
 	for _, flag := range p.Flags {
 		if flag.PublicName == name {
 			return flag, nil
@@ -49,7 +49,7 @@ func (p *parser) GetFlag(name string) (*Flag, error) {
 // GetHelp returns a string containing the parser's description text,
 // and the usage information for each flag currently incorperated within
 // the parser.
-func (p *parser) GetHelp() string {
+func (p *Parser) GetHelp() string {
 	// Get screen width to determine max line lengths later.
 	screenWidth := getScreenWidth()
 
@@ -165,7 +165,7 @@ func (p *parser) GetHelp() string {
 // Parser accepts a slice of strings as flags and arguments to be parsed. The
 // parser will call each encountered flag's action. Unexpected flags will
 // cause an error. All errors are returned.
-func (p *parser) Parse(allArgs ...string) error {
+func (p *Parser) Parse(allArgs ...string) error {
 	p.Values = make(map[string]interface{})
 	requiredFlags := make(map[string]*Flag)
 
@@ -191,7 +191,7 @@ func (p *parser) Parse(allArgs ...string) error {
 		}
 
 		if flag == nil {
-			return fmt.Errorf("flag '%s' is not a valid flag.", flagName)
+			return fmt.Errorf("flag '%s' is not a valid flag", flagName)
 		}
 
 		_, err := flag.DesiredAction(p, flag, args...)
@@ -202,7 +202,7 @@ func (p *parser) Parse(allArgs ...string) error {
 
 	if len(requiredFlags) != 0 {
 		for _, flag := range requiredFlags {
-			return fmt.Errorf("flag '%s' is required but was not present.", flag.DisplayName())
+			return fmt.Errorf("flag '%s' is required but was not present", flag.DisplayName())
 		}
 	}
 	return nil
@@ -210,25 +210,25 @@ func (p *parser) Parse(allArgs ...string) error {
 
 // Path will set the parser's program name to the program name specified by the
 // provided path.
-func (p *parser) Path(progPath string) *parser {
+func (p *Parser) Path(progPath string) *Parser {
 	paths := strings.Split(progPath, string(os.PathSeparator))
 	return p.Prog(paths[len(paths)-1])
 }
 
 // Prog sets the name of the parser directly.
-func (p *parser) Prog(name string) *parser {
+func (p *Parser) Prog(name string) *Parser {
 	p.ProgramName = name
 	return p
 }
 
 // Usage sets the provide string as the usage/description text for the parser.
-func (p *parser) Usage(usage string) *parser {
+func (p *Parser) Usage(usage string) *Parser {
 	p.UsageText = usage
 	return p
 }
 
 // ShowHelp outputs to stdout the parser's generated help text.
-func (p *parser) ShowHelp() *parser {
+func (p *Parser) ShowHelp() *Parser {
 	fmt.Println(p.GetHelp())
 
 	return p
@@ -236,8 +236,8 @@ func (p *parser) ShowHelp() *parser {
 
 // NewParser returns an instantiated pointer to a new parser instance, with
 // a description matching the provided string.
-func NewParser(desc string) *parser {
-	p := parser{UsageText: desc}
+func NewParser(desc string) *Parser {
+	p := Parser{UsageText: desc}
 	if len(os.Args) >= 1 {
 		p.Path(os.Args[0])
 	}
