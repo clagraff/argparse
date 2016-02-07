@@ -206,46 +206,6 @@ func (p *parser) Parse(allArgs ...string) error {
 		}
 	}
 	return nil
-	/*
-		for _, opt := range p.Arguments {
-			if opt.IsPositional {
-				positionals = append(positionals, opt)
-			} else {
-				flags = append(flags, opt)
-			}
-			p.Values[opt.Name] = opt.DefaultVal
-		}
-
-		count := 0
-		max := len(args)
-		for count < max {
-			arg := args[count]
-			if arg == "--" {
-				count = count + 2
-				continue
-			}
-			if isFlagFormat(arg) {
-				flagName := getFlagName(arg)
-				for _, flag := range flags {
-					if flag.Name == flagName {
-						if count+1 < max {
-							_, err := flag.ActionType(p, flag, args[count+1:]...)
-							if err != nil {
-								fmt.Println(err.Error())
-								break
-							}
-						} else {
-							_, err := flag.ActionType(p, flag, "")
-							if err != nil {
-								fmt.Println(err.Error())
-								break
-							}
-						}
-					}
-				}
-			}
-			count++
-		}*/
 }
 
 // Path will set the parser's program name to the program name specified by the
