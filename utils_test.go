@@ -107,3 +107,73 @@ func TestExtractFlags(t *testing.T) {
 		)
 	}
 }
+
+// TestGetScreenWidth tests to ensure that a positive, non-zero integer value is returned
+// to represent the width of the current screen.
+func TestGetScreenWidth(t *testing.T) {
+	// I am not really sure the best way to test this.
+	// TODO: make a better test!
+
+	width := getScreenWidth()
+	if width <= 0 {
+		t.Error("Retrieved screen width should be a positive, non-zero integer")
+	}
+}
+
+// TestJoin tests to ensure that a variety of string slices can be joined in the
+// correct, expected manner.
+func TestJoin(t *testing.T) {
+	testStrings := [][]string{
+		[]string{"one", "two"},
+		[]string{""},
+		[]string{"three", "four", "five"},
+	}
+
+	expectedStrings := []string{
+		"one two",
+		"",
+		"three four five",
+	}
+
+	for i, test := range testStrings {
+		actual := join(" ", test...)
+		expected := expectedStrings[i]
+
+		if actual != expected {
+			t.Errorf(
+				"Expected: '%s' but received: '%s'",
+				expected,
+				actual,
+			)
+		}
+	}
+
+	actual := join("-*-", "abc", "def")
+	expected := "abc-*-def"
+	if actual != expected {
+		t.Errorf(
+			"Expected: '%s' but received: '%s'",
+			expected,
+			actual,
+		)
+	}
+}
+
+// TestSpacer tests to make sure the proper length strings are returned, as expected.
+func TestSpacer(t *testing.T) {
+	intTests := []int{-1000, -100, -10, -1, 0, 1, 10, 100, 1000}
+
+	for _, test := range intTests {
+		actual := spacer(test)
+		expectedLen := test
+		if expectedLen < 0 {
+			expectedLen = 0
+		}
+
+		if len(actual) != expectedLen {
+			if len(actual) != 0 {
+				t.Errorf("Expected string of length: %d but received: '%s'", expectedLen, actual)
+			}
+		}
+	}
+}
