@@ -1,3 +1,5 @@
+// Package parg provides functionallity to emulate Python's argparse for
+// setting-up and parsing a program's flags & arguments.
 package parg
 
 import (
@@ -6,32 +8,36 @@ import (
 	"strings"
 )
 
+// parser contains program-level settings and information, stores flags,
+// and values collected upon parsing.
 type parser struct {
-	ProgramName     string
-	UsageText       string
-	DescriptionText string
-	PrefixChar      string
-	AddHelpArg      bool
-	AllowAbbrev     bool
-	Flags           []*Flag
-	Values          map[string]interface{}
+	ProgramName string
+	AddHelpArg  bool
+	AllowAbbrev bool
+	Flags       []*Flag
+	UsageText   string
+	Values      map[string]interface{}
 }
 
+// AddHelp adds a new flag to output usage information for the current parser
+// and each of its flags.
 func (p *parser) AddHelp() *parser {
-	return p.Help(true)
+	helpFlag := NewFlag("help", "Display usage information").Action(ShowHelp)
+	shortHelpFlag := NewFlag("h", "Display usage information").Action(ShowHelp).Dest("help")
+
+	p.Flags = append(p.Flags, helpFlag, shortHelpFlag)
+	return p
 }
 
-func (p *parser) AddArg(f *Flag) *parser {
+// AddFlag appends the provided flag to the current parser.
+func (p *parser) AddFlag(f *Flag) *parser {
 	p.Flags = append(p.Flags, f)
 	return p
 }
 
-func (p *parser) Desc(text string) *parser {
-	p.DescriptionText = text
-	return p
-}
-
-func (p *parser) GetArg(name string) (*Flag, error) {
+// GetFlag retrieves the first flag with a public name matching the specified
+// name, or will otherwise return an error.
+func (p *parser) GetFlag(name string) (*Flag, error) {
 	for _, flag := range p.Flags {
 		if flag.PublicName == name {
 			return flag, nil
@@ -41,7 +47,11 @@ func (p *parser) GetArg(name string) (*Flag, error) {
 	return nil, fmt.Errorf("No argument named: '%s'", name)
 }
 
+// GetHelp returns a string containing the parser's description text,
+// and the usage information for each flag currently incorperated within
+// the parser.
 func (p *parser) GetHelp() string {
+	// Get screen width to determine max line lengths later.
 	screenWidth := getScreenWidth()
 
 	var positional []*Flag
@@ -155,11 +165,9 @@ func (p *parser) GetHelp() string {
 	return join("", usage...)
 }
 
-func (p *parser) Help(enable bool) *parser {
-	p.AddHelpArg = enable
-	return p
-}
-
+// Parser accepts a slice of strings as flags and arguments to be parsed. The
+// parser will call each encountered flag's action. Unexpected flags will
+// cause an error. All errors are returned.
 func (p *parser) Parse(allArgs ...string) error {
 	p.Values = make(map[string]interface{})
 	for _, flag := range p.Flags {
@@ -230,33 +238,36 @@ func (p *parser) Parse(allArgs ...string) error {
 		}*/
 }
 
+// Path will set the parser's program name to the program name specified by the
+// provided path.
 func (p *parser) Path(progPath string) *parser {
 	paths := strings.Split(progPath, string(os.PathSeparator))
 	return p.Prog(paths[len(paths)-1])
 }
 
+// Prog sets the name of the parser directly.
 func (p *parser) Prog(name string) *parser {
 	p.ProgramName = name
 	return p
 }
 
-func (p *parser) RemoveHelp() *parser {
-	return p.Help(false)
-}
-
+// Usage sets the provide string as the usage/description text for the parser.
 func (p *parser) Usage(usage string) *parser {
 	p.UsageText = usage
 	return p
 }
 
+// ShowHelp outputs to stdout the parser's generated help text.
 func (p *parser) ShowHelp() *parser {
 	fmt.Println(p.GetHelp())
 
 	return p
 }
 
-func Parser(desc string) *parser {
-	p := parser{AddHelpArg: true, AllowAbbrev: true, PrefixChar: "-"}
+// NewParser returns an instantiated pointer to a new parser instance, with
+// a description matching the provided string.
+func NewParser(desc string) *parser {
+	p := parser{AddHelpArg: true, AllowAbbrev: true, UsageText: desc}
 	if len(os.Args) >= 1 {
 		p.Path(os.Args[0])
 	}

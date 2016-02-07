@@ -131,3 +131,8 @@ func AppendConst(p *parser, f *Flag, args ...string) ([]string, error) {
 	p.Values[f.DestName] = append(p.Values[f.DestName].([]interface{}), f.ConstVal)
 	return args, nil
 }
+
+func ShowHelp(p *parser, f *Flag, args ...string) ([]string, error) {
+	p.ShowHelp()
+	return args, nil
+}
