@@ -99,11 +99,12 @@ func (f *Flag) Float32() *Flag {
 func (f *Flag) DisplayName() string {
 	var prefix string
 
-	if len(f.PublicName) > 1 {
+	if len(f.PublicName) == 1 {
 		prefix = "-"
-	} else if len(f.PublicName) == 1 {
+	} else if len(f.PublicName) > 1 {
 		prefix = "--"
 	}
+
 	return join("", prefix, strings.ToLower(f.PublicName))
 }
 
@@ -114,7 +115,12 @@ func (f *Flag) DisplayName() string {
 func (f *Flag) GetUsage() string {
 	var usage []string
 
-	usage = append(usage, "[", f.DisplayName())
+	isRequired := f.IsRequired
+	if isRequired == false {
+		usage = append(usage, "[")
+	}
+
+	usage = append(usage, f.DisplayName())
 
 	var nargs []string
 
@@ -186,7 +192,9 @@ func (f *Flag) GetUsage() string {
 		}
 	}
 
-	usage = append(usage, "]")
+	if isRequired == false {
+		usage = append(usage, "]")
+	}
 
 	return join("", usage...)
 }

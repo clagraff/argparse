@@ -136,9 +136,7 @@ func (p *parser) GetHelp() string {
 		var help []string
 
 		for _, arg := range notPositional {
-			name := arg.GetUsage()
-
-			names = append(names, name[1:len(name)-1])
+			names = append(names, arg.DisplayName())
 			help = append(help, arg.HelpText)
 		}
 
@@ -169,7 +167,12 @@ func (p *parser) GetHelp() string {
 // cause an error. All errors are returned.
 func (p *parser) Parse(allArgs ...string) error {
 	p.Values = make(map[string]interface{})
+	requiredFlags := make(map[string]*Flag)
+
 	for _, flag := range p.Flags {
+		if flag.IsRequired == true {
+			requiredFlags[flag.PublicName] = flag
+		}
 		p.Values[flag.DestName] = flag.DefaultVal
 	}
 
@@ -179,6 +182,9 @@ func (p *parser) Parse(allArgs ...string) error {
 
 		for _, f := range p.Flags {
 			if flagName == f.PublicName {
+				if _, ok := requiredFlags[flagName]; ok {
+					delete(requiredFlags, flagName)
+				}
 				flag = f
 				break
 			}
@@ -194,6 +200,11 @@ func (p *parser) Parse(allArgs ...string) error {
 		}
 	}
 
+	if len(requiredFlags) != 0 {
+		for _, flag := range requiredFlags {
+			return fmt.Errorf("flag '%s' is required but was not present.", flag.DisplayName())
+		}
+	}
 	return nil
 	/*
 		for _, opt := range p.Arguments {
