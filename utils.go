@@ -9,8 +9,8 @@ import (
 )
 
 // extractFlags will extract all flags from the slice of arguments provided,
-// returning one slice of just the invididual flags, and all other arguments
-// in a second slice.
+// returning one slice of invididual flags, and a slice for all other arguments
+// present.
 func extractFlags(allArgs ...string) (flags, args []string) {
 	count := 0
 	max := len(allArgs)
@@ -54,18 +54,10 @@ func extractFlags(allArgs ...string) (flags, args []string) {
 	return flags, args
 }
 
-func getFlagName(flag string) string {
-	if len(flag) == 2 && flag[0] == '-' {
-		return string(flag[1])
-	} else if len(flag) > 2 && flag[0:2] == "--" {
-		return flag[2:]
-	}
-	return flag
-}
-
+// getScreenWidth returns the width of the screen the program is executed within.
 func getScreenWidth() int {
 	if err := termbox.Init(); err != nil {
-		panic(err)
+		panic(err) // TODO: This should really be made to return an error.
 	}
 	w, _ := termbox.Size()
 	termbox.Close()
@@ -73,23 +65,8 @@ func getScreenWidth() int {
 	return w
 }
 
-func isFlagFormat(text string) bool {
-	if len(text) == 0 {
-		return false
-	}
-
-	if text[0] != '-' {
-		return false
-	}
-
-	text = text[1:]
-	if text[0] == '-' {
-		text = text[1:]
-	}
-
-	return !strings.Contains(text, "-")
-}
-
+// join will join the provided strings by the specified delimiter. The delimiter
+// does not have to be limited to a single character; any string can be a delimiter.
 func join(delimiter string, args ...string) string {
 	var join bytes.Buffer
 	num := len(args)
@@ -108,6 +85,8 @@ func join(delimiter string, args ...string) string {
 	return join.String()
 }
 
+// spacer provides a string containing only space-characters of the
+// exact number specified.
 func spacer(length int) string {
 	count := 0
 	char := " "
@@ -121,6 +100,8 @@ func spacer(length int) string {
 	return buff.String()
 }
 
+// wordWrap breaks the provided string down into an array of strings with
+// character-counts not exceeding the specified max length.
 func wordWrap(text string, max int) []string {
 	var lines []string
 	var line []string
