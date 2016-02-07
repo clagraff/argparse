@@ -12,7 +12,6 @@ import (
 // and values collected upon parsing.
 type parser struct {
 	ProgramName string
-	AddHelpArg  bool
 	AllowAbbrev bool
 	Flags       []*Flag
 	UsageText   string
@@ -267,7 +266,7 @@ func (p *parser) ShowHelp() *parser {
 // NewParser returns an instantiated pointer to a new parser instance, with
 // a description matching the provided string.
 func NewParser(desc string) *parser {
-	p := parser{AddHelpArg: true, AllowAbbrev: true, UsageText: desc}
+	p := parser{UsageText: desc}
 	if len(os.Args) >= 1 {
 		p.Path(os.Args[0])
 	}

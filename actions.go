@@ -42,9 +42,13 @@ func Store(p *parser, f *Flag, args ...string) ([]string, error) {
 			return args, fmt.Errorf("flag '%s' is expecting %d argument(s) but was provided %d", f.DisplayName(), num, len(args))
 		}
 
-		var values []string
-		values = append(values, args[0:num]...)
-		p.Values[f.DestName] = values
+		if num > 1 {
+			var values []string
+			values = append(values, args[0:num]...)
+			p.Values[f.DestName] = values
+		} else {
+			p.Values[f.DestName] = args[0]
+		}
 	}
 
 	return args, nil
