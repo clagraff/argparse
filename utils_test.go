@@ -177,3 +177,18 @@ func TestSpacer(t *testing.T) {
 		}
 	}
 }
+
+// TestWordWrap tests to ensure strings will be broken into the appropriate
+// word-length limited slice of strings.
+func TestWordWrap(t *testing.T) {
+	oneLine := "This text is below the limit."
+	threeLines := "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum dolor justo, tempor quis"
+
+	if len(wordWrap(oneLine, 35)) != 1 {
+		t.Error("wordWrap did not return a slice of lenth 1")
+	}
+
+	if len(wordWrap(threeLines, 35)) != 3 {
+		t.Error("wordWrap did not return a slice of length 3")
+	}
+}
