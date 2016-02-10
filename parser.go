@@ -21,7 +21,7 @@ type Parser struct {
 // AddHelp adds a new flag to output usage information for the current parser
 // and each of its flags.
 func (p *Parser) AddHelp() *Parser {
-	helpFlag := NewFlag("help", "Display usage information").Action(ShowHelp)
+	helpFlag := NewFlag("help", "Display usage information").Action(ShowHelp).Dest("help")
 	shortHelpFlag := NewFlag("h", "Display usage information").Action(ShowHelp).Dest("help")
 
 	p.Flags = append(p.Flags, helpFlag, shortHelpFlag)
@@ -37,6 +37,9 @@ func (p *Parser) AddFlag(f *Flag) *Parser {
 // GetFlag retrieves the first flag with a public name matching the specified
 // name, or will otherwise return an error.
 func (p *Parser) GetFlag(name string) (*Flag, error) {
+	if len(name) <= 0 {
+		return nil, fmt.Errorf("Invalid flag PublicName")
+	}
 	for _, flag := range p.Flags {
 		if flag.PublicName == name {
 			return flag, nil
@@ -80,21 +83,6 @@ func (p *Parser) GetHelp() string {
 			headerLen = headerIndent
 			notPosArgs = append(notPosArgs, join("", "\n", spacer(headerIndent)))
 		}
-		/*} else {
-			positional = append(positional, arg)
-			name := arg.GetUsage()
-			if len(name) > longest {
-				longest = len(name)
-			}
-
-			argUsg := arg.GetUsage()
-			posArgs = append(posArgs, arg.GetUsage())
-			headerLen = headerLen + len(argUsg)
-			if headerLen+len(argUsg) > screenWidth {
-				headerLen = headerIndent
-				posArgs = append(posArgs, join("", "\n", spacer(headerIndent)))
-			}
-		}*/
 	}
 
 	longest = longest + 4
