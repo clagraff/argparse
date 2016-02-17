@@ -214,7 +214,7 @@ func (f *Flag) Nargs(nargs string) *Flag {
 
 	_, err := strconv.Atoi(nargs)
 	if err != nil {
-		panic(fmt.Errorf("Invalid nargs amount/character: '%s'", nargs))
+		panic(fmt.Errorf("Invalid nargs: '%s' Must be an int or one of: '?*+'", nargs))
 	}
 
 	f.ArgNum = nargs
