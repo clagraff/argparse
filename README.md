@@ -1,6 +1,7 @@
 # parg
 ## Project Status
-[ ![Codeship Status for clagraff/parg](https://codeship.com/projects/68eb7800-af6b-0133-1b97-3e80188314d9/status?branch=master)](https://codeship.com/projects/132507)[![GoDoc](https://godoc.org/github.com/clagraff/parg?status.svg)](https://godoc.org/github.com/clagraff/parg)
+[ ![Codeship Status for clagraff/parg](https://codeship.com/projects/68eb7800-af6b-0133-1b97-3e80188314d9/status?branch=master)](https://codeship.com/projects/132507)
+[![GoDoc](https://godoc.org/github.com/clagraff/parg?status.svg)](https://godoc.org/github.com/clagraff/parg)
 
 ## Description
 A Golang flag & argument parser for program arguments. The goal of parg (program-arguments) is to emulate the usability and functionallity of Python's [argparse](https://docs.python.org/dev/howto/argparse.html#the-basics) package, where setting up a parser and arguments is easy and trivial.
