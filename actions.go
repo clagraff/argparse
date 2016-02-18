@@ -43,11 +43,23 @@ func Store(p *Parser, f *Flag, args ...string) ([]string, error) {
 		}
 
 		if num > 1 {
-			var values []string
-			values = append(values, args[0:num]...)
+			var values []interface{}
+			for _, v := range args[0:num] {
+				values = append(values, v)
+			}
 			p.Values[f.DestName] = values
+			if num > len(args) {
+				args = []string{}
+			} else {
+				args = args[num:]
+			}
 		} else {
 			p.Values[f.DestName] = args[0]
+			if len(args) > 1 {
+				args = args[1:]
+			} else {
+				args = []string{}
+			}
 		}
 	}
 

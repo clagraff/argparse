@@ -226,6 +226,7 @@ func (p *Parser) ShowHelp() *Parser {
 // a description matching the provided string.
 func NewParser(desc string) *Parser {
 	p := Parser{UsageText: desc}
+	p.Values = make(map[string]interface{})
 	if len(os.Args) >= 1 {
 		p.Path(os.Args[0])
 	}
