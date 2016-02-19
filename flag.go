@@ -2,7 +2,6 @@ package parg
 
 import (
 	"fmt"
-	"reflect"
 	"strconv"
 	"strings"
 )
@@ -18,10 +17,8 @@ func NewFlag(name, help string) *Flag {
 		DesiredAction: StoreTrue,
 		DestName:      name,
 		HelpText:      help,
-		IsRequired:    false,
 		MetaVarText:   []string{name},
 		PublicName:    name,
-		RequiredKind:  reflect.Bool,
 	}
 	return &f
 }
@@ -38,7 +35,6 @@ type Flag struct {
 	MetaVarText     []string
 	PossibleChoices []interface{} // Currently unused. TODO: implement.
 	PublicName      string
-	RequiredKind    reflect.Kind
 }
 
 // Action sets the flag's action to the provided action function.
@@ -47,18 +43,11 @@ func (f *Flag) Action(action Action) *Flag {
 	return f
 }
 
-// Bool sets the flag's required type as a boolean.
-func (f *Flag) Bool() *Flag {
-	return f.Kind(reflect.Bool)
-}
-
 // Choices appends the provided slice as acceptable arguments for the flag.
 func (f *Flag) Choices(choices []interface{}) *Flag {
+	f.PossibleChoices = []interface{}{}
 	for _, choice := range choices {
-		if f.RequiredKind != reflect.Invalid && reflect.ValueOf(choice).Kind() != f.RequiredKind {
-			panic(fmt.Errorf("Choice: '%v' must be of type: '%s'", choice, f.RequiredKind.String()))
-		}
-		choices = append(choices, choice)
+		f.PossibleChoices = append(f.PossibleChoices, choice)
 	}
 	return f
 }
@@ -82,16 +71,6 @@ func (f *Flag) Default(value interface{}) *Flag {
 func (f *Flag) Dest(name string) *Flag {
 	f.DestName = name
 	return f
-}
-
-// Float sets the flag's required type as a float.
-func (f *Flag) Float() *Flag {
-	return f.Kind(reflect.Float64)
-}
-
-// Float32 sets the flag's required type as a float32.
-func (f *Flag) Float32() *Flag {
-	return f.Kind(reflect.Float32)
 }
 
 // DisplayName returns the flag's public name, prefixed with the appropriate number
@@ -205,16 +184,6 @@ func (f *Flag) Help(text string) *Flag {
 	return f
 }
 
-// Int64 sets the flag's required type as a int64.
-func (f *Flag) Int64() *Flag {
-	return f.Kind(reflect.Int64)
-}
-
-// Int32 sets the flag's required type as a int32.
-func (f *Flag) Int32() *Flag {
-	return f.Kind(reflect.Int32)
-}
-
 // MetaVar sets the flag's metavar text to the provided string. Additional
 // metavar strings can be provided, and will be used for flags with more than
 // expected argument.
@@ -235,8 +204,8 @@ func (f *Flag) MetaVar(meta string, metaSlice ...string) *Flag {
 // or more arguments.
 func (f *Flag) Nargs(nargs string) *Flag {
 	// TODO: Allow "r"/"R" for remainder args
-	allowed_chars := []string{"?", "*", "+"}
-	for _, char := range allowed_chars {
+	allowedChars := []string{"?", "*", "+"}
+	for _, char := range allowedChars {
 		if nargs == char {
 			f.ArgNum = char
 			return f
@@ -245,7 +214,7 @@ func (f *Flag) Nargs(nargs string) *Flag {
 
 	_, err := strconv.Atoi(nargs)
 	if err != nil {
-		panic(fmt.Errorf("Invalid nargs amount/character: '%s'", nargs))
+		panic(fmt.Errorf("Invalid nargs: '%s' Must be an int or one of: '?*+'", nargs))
 	}
 
 	f.ArgNum = nargs
@@ -262,26 +231,5 @@ func (f *Flag) NotRequired() *Flag {
 // Required enables the flag to required to be present when parsing arguments.
 func (f *Flag) Required() *Flag {
 	f.IsRequired = true
-	return f
-}
-
-// String sets the flag's required type as a string.
-func (f *Flag) String() *Flag {
-	return f.Kind(reflect.String)
-}
-
-// Uint64 sets the flag's required type as a uint64.
-func (f *Flag) Uint64() *Flag {
-	return f.Kind(reflect.Uint64)
-}
-
-// Uint32 sets the flag's required type as a uint32.
-func (f *Flag) Uint32() *Flag {
-	return f.Kind(reflect.Uint32)
-}
-
-// Kind sets the flag's required kind to the provided reflect.Kind constant.
-func (f *Flag) Kind(kind reflect.Kind) *Flag {
-	f.RequiredKind = kind
 	return f
 }

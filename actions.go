@@ -10,11 +10,11 @@ import (
 
 // Action is type to represent a callable function which will operate on a parser,
 // a flag, and an array of argument strings.
-type Action func(*parser, *Flag, ...string) ([]string, error)
+type Action func(*Parser, *Flag, ...string) ([]string, error)
 
 // Store will attempt to store the appropriate number of arguments for the flag,
 // (if any), into the parser. Remaining arguments & any errors are returned.
-func Store(p *parser, f *Flag, args ...string) ([]string, error) {
+func Store(p *Parser, f *Flag, args ...string) ([]string, error) {
 	// If we are not expecting any arguments, panic!
 	if f.ArgNum == "0" {
 		panic(fmt.Sprintf("flag '%s' must expect at least one argument", f.DisplayName()))
@@ -43,11 +43,23 @@ func Store(p *parser, f *Flag, args ...string) ([]string, error) {
 		}
 
 		if num > 1 {
-			var values []string
-			values = append(values, args[0:num]...)
+			var values []interface{}
+			for _, v := range args[0:num] {
+				values = append(values, v)
+			}
 			p.Values[f.DestName] = values
+			if num > len(args) {
+				args = []string{}
+			} else {
+				args = args[num:]
+			}
 		} else {
 			p.Values[f.DestName] = args[0]
+			if len(args) > 1 {
+				args = args[1:]
+			} else {
+				args = []string{}
+			}
 		}
 	}
 
@@ -56,7 +68,7 @@ func Store(p *parser, f *Flag, args ...string) ([]string, error) {
 
 // StoreConst stores the flag's constant value into the parser. Provided
 // arguments remain unmodified.
-func StoreConst(p *parser, f *Flag, args ...string) ([]string, error) {
+func StoreConst(p *Parser, f *Flag, args ...string) ([]string, error) {
 	if f.ArgNum != "0" {
 		panic(fmt.Sprintf("flag '%s' cannot expect any arguments.", f.DisplayName()))
 	}
@@ -67,7 +79,7 @@ func StoreConst(p *parser, f *Flag, args ...string) ([]string, error) {
 
 // StoreFalse stores a boolean `false` into the parser. Provided arguments remain
 // unmodified.
-func StoreFalse(p *parser, f *Flag, args ...string) ([]string, error) {
+func StoreFalse(p *Parser, f *Flag, args ...string) ([]string, error) {
 	if f.ArgNum != "0" {
 		panic(fmt.Sprintf("flag '%s' cannot expect any arguments.", f.DisplayName()))
 	}
@@ -77,7 +89,7 @@ func StoreFalse(p *parser, f *Flag, args ...string) ([]string, error) {
 }
 
 // StoreTrue stores a boolean `true` into the parser. Provided arguments remain unmodified.
-func StoreTrue(p *parser, f *Flag, args ...string) ([]string, error) {
+func StoreTrue(p *Parser, f *Flag, args ...string) ([]string, error) {
 	if f.ArgNum != "0" {
 		panic(fmt.Sprintf("flag '%s' cannot expect any arguments.", f.DisplayName()))
 	}
@@ -88,8 +100,8 @@ func StoreTrue(p *parser, f *Flag, args ...string) ([]string, error) {
 
 // Append retrives the appropriate number of argumnents for the current flag, (if any),
 // and appends them individually into the parser. Remaining arguments and errors are returned.
-func Append(p *parser, f *Flag, args ...string) ([]string, error) {
-	appendValue := func(p *parser, f *Flag, value interface{}) {
+func Append(p *Parser, f *Flag, args ...string) ([]string, error) {
+	appendValue := func(p *Parser, f *Flag, value interface{}) {
 		if p.Values[f.DestName] == nil || reflect.ValueOf(p.Values[f.DestName]).Kind() != reflect.Slice {
 			p.Values[f.DestName] = make([]interface{}, 0)
 		}
@@ -137,7 +149,7 @@ func Append(p *parser, f *Flag, args ...string) ([]string, error) {
 
 // AppendConst appends the flag's constant value into the parser. Provided arguments
 // remain unmodified.
-func AppendConst(p *parser, f *Flag, args ...string) ([]string, error) {
+func AppendConst(p *Parser, f *Flag, args ...string) ([]string, error) {
 	if f.ArgNum != "0" {
 		panic(fmt.Sprintf("flag '%s' cannot expect any arguments.", f.DisplayName()))
 	}
@@ -151,7 +163,7 @@ func AppendConst(p *parser, f *Flag, args ...string) ([]string, error) {
 
 // ShowHelp calls the parser's ShowHelp function to output parser usage information
 // and help information for each flag to stdout. Provided arguments remain unchanged.
-func ShowHelp(p *parser, f *Flag, args ...string) ([]string, error) {
+func ShowHelp(p *Parser, f *Flag, args ...string) ([]string, error) {
 	p.ShowHelp()
 	return args, nil
 }
