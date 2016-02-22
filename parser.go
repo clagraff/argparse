@@ -185,6 +185,7 @@ func (p *Parser) GetHelp() string {
 func (p *Parser) Parse(allArgs ...string) error {
 	p.Values = make(map[string]interface{})
 	requiredFlags := make(map[string]*Flag)
+	var err error
 
 	for _, flag := range p.Flags {
 		if flag.IsRequired == true {
@@ -198,6 +199,9 @@ func (p *Parser) Parse(allArgs ...string) error {
 		var flag *Flag
 
 		for _, f := range p.Flags {
+			if f.IsPositional == true {
+				continue
+			}
 			if flagName == f.PublicName {
 				if _, ok := requiredFlags[flagName]; ok {
 					delete(requiredFlags, flagName)
@@ -211,7 +215,20 @@ func (p *Parser) Parse(allArgs ...string) error {
 			return fmt.Errorf("flag '%s' is not a valid flag", flagName)
 		}
 
-		_, err := flag.DesiredAction(p, flag, args...)
+		args, err = flag.DesiredAction(p, flag, args...)
+		if err != nil {
+			return err
+		}
+	}
+
+	for _, f := range p.Flags {
+		if f.IsPositional == false {
+			continue
+		}
+		if _, ok := requiredFlags[f.DestName]; ok {
+			delete(requiredFlags, f.DestName)
+		}
+		args, err = f.DesiredAction(p, f, args...)
 		if err != nil {
 			return err
 		}
