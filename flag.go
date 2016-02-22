@@ -32,6 +32,7 @@ type Flag struct {
 	DestName        string
 	HelpText        string
 	IsRequired      bool
+	IsPositional    bool
 	MetaVarText     []string
 	PossibleChoices []interface{} // Currently unused. TODO: implement.
 	PublicName      string
@@ -225,6 +226,18 @@ func (f *Flag) Nargs(nargs string) *Flag {
 // arguments.
 func (f *Flag) NotRequired() *Flag {
 	f.IsRequired = false
+	return f
+}
+
+// NotPositional disables a flag from being positionally interpretted.
+func (f *Flag) NotPositional() *Flag {
+	f.IsPositional = false
+	return f
+}
+
+// Positional enables a flag to be positionally interpretted.
+func (f *Flag) Positional() *Flag {
+	f.IsPositional = true
 	return f
 }
 
