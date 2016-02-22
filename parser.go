@@ -70,7 +70,14 @@ func (p *Parser) GetHelp() string {
 
 	for _, arg := range p.Flags {
 		//if arg.IsPositional == false {
-		notPositional = append(notPositional, arg)
+		if arg.IsPositional == false {
+			notPositional = append(notPositional, arg)
+		} else {
+			positional = append(positional, arg)
+		}
+	}
+
+	for _, arg := range notPositional {
 		name := arg.GetUsage()
 		if len(name) > longest {
 			longest = len(name)
@@ -82,6 +89,21 @@ func (p *Parser) GetHelp() string {
 		if headerLen+len(argUsg) > screenWidth {
 			headerLen = headerIndent
 			notPosArgs = append(notPosArgs, join("", "\n", spacer(headerIndent)))
+		}
+	}
+
+	for _, arg := range positional {
+		name := arg.GetUsage()
+		if len(name) > longest {
+			longest = len(name)
+		}
+
+		argUsg := arg.GetUsage()
+		posArgs = append(posArgs, arg.GetUsage())
+		headerLen = headerLen + len(argUsg)
+		if headerLen+len(argUsg) > screenWidth {
+			headerLen = headerIndent
+			posArgs = append(posArgs, join("", "\n", spacer(headerIndent)))
 		}
 	}
 
@@ -113,7 +135,14 @@ func (p *Parser) GetHelp() string {
 			if longest > screenWidth {
 				lines = append(lines, "\n", spacer(longest))
 			}
-			lines = append(lines, help[i], "\n")
+
+			helpLines := wordWrap(help[i], screenWidth-longest)
+			lines = append(lines, helpLines[0], "\n")
+			if len(helpLines) > 1 {
+				for _, helpLine := range helpLines[1:len(helpLines)] {
+					lines = append(lines, spacer(longest), helpLine, "\n")
+				}
+			}
 		}
 		usage = append(usage, lines...)
 	}
