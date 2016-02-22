@@ -79,10 +79,12 @@ func (f *Flag) Dest(name string) *Flag {
 func (f *Flag) DisplayName() string {
 	var prefix string
 
-	if len(f.PublicName) == 1 {
-		prefix = "-"
-	} else if len(f.PublicName) > 1 {
-		prefix = "--"
+	if f.IsPositional == false {
+		if len(f.PublicName) == 1 {
+			prefix = "-"
+		} else if len(f.PublicName) > 1 {
+			prefix = "--"
+		}
 	}
 
 	return join("", prefix, strings.ToLower(f.PublicName))

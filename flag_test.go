@@ -120,6 +120,20 @@ func TestFlagDisplayName(t *testing.T) {
 	if name != expected {
 		t.Errorf("DisplayName '%s' does not match the expected: '%s'", name, expected)
 	}
+
+	f.PublicName = "f"
+	expected = "f"
+	name = f.Positional().DisplayName()
+	if name != expected {
+		t.Errorf("DisplayName '%s' does not match the expected: '%s'", name, expected)
+	}
+
+	f.PublicName = "foobar"
+	expected = "foobar"
+	name = f.Positional().DisplayName()
+	if name != expected {
+		t.Errorf("DisplayName '%s' does not match the expected: '%s'", name, expected)
+	}
 }
 
 // TestFlagGetUsage tests the retrival of a flag's usage string via the GetUsage method.
