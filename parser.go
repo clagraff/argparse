@@ -78,9 +78,9 @@ func (p *Parser) GetHelp() string {
 	}
 
 	for _, arg := range notPositional {
-		name := arg.GetUsage()
-		if len(name) > longest {
-			longest = len(name)
+		displayName := arg.DisplayName()
+		if len(displayName) > longest {
+			longest = len(displayName)
 		}
 
 		argUsg := arg.GetUsage()
@@ -93,9 +93,9 @@ func (p *Parser) GetHelp() string {
 	}
 
 	for _, arg := range positional {
-		name := arg.GetUsage()
-		if len(name) > longest {
-			longest = len(name)
+		displayName := arg.DisplayName()
+		if len(displayName) > longest {
+			longest = len(displayName)
 		}
 
 		argUsg := arg.GetUsage()

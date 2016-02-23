@@ -18,7 +18,7 @@ func NewOption(name, help string) *Option {
 		DestName:      name,
 		HelpText:      help,
 		MetaVarText:   []string{name},
-		PublicNames:   []string{name},
+		PublicNames:   strings.Split(name, " "),
 	}
 	return &f
 }
@@ -111,7 +111,14 @@ func (f *Option) GetUsage() string {
 		usage = append(usage, "[")
 	}
 
-	usage = append(usage, f.DisplayName())
+	if len(f.PublicNames) == 1 {
+		usage = append(usage, f.DisplayName())
+	} else {
+		pNames := f.PublicNames
+		f.PublicNames = []string{f.PublicNames[0]}
+		usage = append(usage, f.DisplayName())
+		f.PublicNames = pNames
+	}
 
 	var nargs []string
 
