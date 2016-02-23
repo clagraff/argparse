@@ -6,6 +6,17 @@ import (
 	"strings"
 )
 
+// IsValidChoice returns a boolean indicating if the provided interface value
+// exists as valid choice for the provided flag.
+func IsValidChoice(f Flag, i interface{}) bool {
+	for _, c := range f.ValidChoices {
+		if i == c {
+			return true
+		}
+	}
+	return false
+}
+
 // NewOption instantiates a new Option pointer, initializing it as a boolean
 // flag. Multiple names should be delimited by a space; names should not
 // contain the prefix character.
@@ -36,6 +47,7 @@ type Option struct {
 	MetaVarText     []string
 	PossibleChoices []interface{} // Currently unused. TODO: implement.
 	PublicNames     []string
+	ValidChoices    []interface{}
 }
 
 // Action sets the option's action to the provided action function.

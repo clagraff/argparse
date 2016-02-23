@@ -2,7 +2,11 @@ package argparse
 
 import "testing"
 
-//import go package for testing related functionality
+// TestIsValidChoice ensures that when an option has no choices, or when it
+// does and a valid choice is provided, the function returns true. Otherwise,
+// it is expected to return false.
+func TestIsValidChoice(t *testing.T) {
+}
 
 // TestNewOption tests the creation of a new option, populated with defaults
 // and appropriate name and description as provided.
