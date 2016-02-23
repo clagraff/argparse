@@ -6,10 +6,10 @@ import (
 	"strings"
 )
 
-// NewOption returns a pointer to a new Option instance, setting the option's destination
-// name, public name and metavar text to the provided name, and the help text to the
-// provided help string.
-func NewOption(name, dest, help string) *Option {
+// NewOption instantiates a new Option pointer, initializing it as a boolean
+// flag. Multiple names should be delimited by a space; names should not
+// contain the prefix character.
+func NewOption(names, dest, help string) *Option {
 	f := Option{
 		ArgNum:        "0",
 		ConstVal:      nil,
@@ -17,8 +17,8 @@ func NewOption(name, dest, help string) *Option {
 		DesiredAction: StoreTrue,
 		DestName:      dest,
 		HelpText:      help,
-		MetaVarText:   []string{name},
-		PublicNames:   strings.Split(name, " "),
+		MetaVarText:   []string{names},
+		PublicNames:   strings.Split(names, " "),
 	}
 	return &f
 }
