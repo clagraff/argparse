@@ -1,4 +1,4 @@
-package parg
+package argparse
 
 import (
 	"strings"

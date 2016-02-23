@@ -1,6 +1,6 @@
-// Package parg provides functionallity to emulate Python's argparse for
+// Package argparse provides functionallity to emulate Python's argparse for
 // setting-up and parsing a program's options & arguments.
-package parg
+package argparse
 
 import (
 	"fmt"
