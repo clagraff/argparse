@@ -15,8 +15,8 @@ func TestParserAddHelp(t *testing.T) {
 	}
 
 	p.AddHelp()
-	if len(p.Options) != 2 {
-		t.Errorf("Expected 2 options, but only has %d", len(p.Options))
+	if len(p.Options) != 1 {
+		t.Errorf("Expected 1 options, but only has %d", len(p.Options))
 	}
 }
 
@@ -46,9 +46,9 @@ func TestParserAddOption(t *testing.T) {
 // TestParserGetOption_InvalidOption tests retreival of an error and nil for a option
 // from a Parser instance by specifying an incorrect PublicName attribute.
 func TestParserGetOption_InvalidOption(t *testing.T) {
-	f1 := NewOption("first", "this is the first option")
-	f2 := NewOption("second", "this is the second option")
-	f3 := NewOption("three", "this is the third option")
+	f1 := NewOption("first", "dest", "this is the first option")
+	f2 := NewOption("second", "dest", "this is the second option")
+	f3 := NewOption("three", "dest", "this is the third option")
 
 	p := Parser{}
 	p.AddOption(f1).AddOption(f2).AddOption(f3)
@@ -70,9 +70,9 @@ func TestParserGetOption_InvalidOption(t *testing.T) {
 // TestParserGetOption_ValidOption tests retreival of options from a Parser instance by specifying
 // their PublicName attribute. A valid option PublicName will be used to retrieve a option.
 func TestParserGetOption_ValidOption(t *testing.T) {
-	f1 := NewOption("first", "this is the first option")
-	f2 := NewOption("second", "this is the second option")
-	f3 := NewOption("three", "this is the third option")
+	f1 := NewOption("first", "dest", "this is the first option")
+	f2 := NewOption("second", "dest", "this is the second option")
+	f3 := NewOption("three", "dest", "this is the third option")
 
 	p := Parser{}
 	p.AddOption(f1).AddOption(f2).AddOption(f3)

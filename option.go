@@ -9,13 +9,13 @@ import (
 // NewOption returns a pointer to a new Option instance, setting the option's destination
 // name, public name and metavar text to the provided name, and the help text to the
 // provided help string.
-func NewOption(name, help string) *Option {
+func NewOption(name, dest, help string) *Option {
 	f := Option{
 		ArgNum:        "0",
 		ConstVal:      nil,
 		DefaultVal:    nil,
 		DesiredAction: StoreTrue,
-		DestName:      strings.Split(name, " ")[0],
+		DestName:      dest,
 		HelpText:      help,
 		MetaVarText:   []string{name},
 		PublicNames:   strings.Split(name, " "),
@@ -272,4 +272,9 @@ func (f *Option) Positional() *Option {
 func (f *Option) Required() *Option {
 	f.IsRequired = true
 	return f
+}
+
+// String outputs a string-serialized version of the Option.
+func (f *Option) String() string {
+	return join(" ", f.GetUsage(), f.HelpText)
 }

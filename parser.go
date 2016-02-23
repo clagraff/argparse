@@ -21,10 +21,9 @@ type Parser struct {
 // AddHelp adds a new option to output usage information for the current parser
 // and each of its options.
 func (p *Parser) AddHelp() *Parser {
-	helpOption := NewOption("help", "Display usage information").Action(ShowHelp).Dest("help")
-	shortHelpOption := NewOption("h", "Display usage information").Action(ShowHelp).Dest("help")
+	helpOption := NewOption("h help", "help", "Display usage information").Action(ShowHelp)
 
-	p.Options = append(p.Options, helpOption, shortHelpOption)
+	p.Options = append(p.Options, helpOption)
 	return p
 }
 
