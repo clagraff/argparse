@@ -15,7 +15,7 @@ func NewOption(name, help string) *Option {
 		ConstVal:      nil,
 		DefaultVal:    nil,
 		DesiredAction: StoreTrue,
-		DestName:      name,
+		DestName:      strings.Split(name, " ")[0],
 		HelpText:      help,
 		MetaVarText:   []string{name},
 		PublicNames:   strings.Split(name, " "),
