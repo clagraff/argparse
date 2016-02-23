@@ -8,7 +8,11 @@ import (
 
 // IsValidChoice returns a boolean indicating if the provided interface value
 // exists as valid choice for the provided flag.
-func IsValidChoice(f Flag, i interface{}) bool {
+func IsValidChoice(f Option, i interface{}) bool {
+	if len(f.ValidChoices) == 0 {
+		return true
+	}
+
 	for _, c := range f.ValidChoices {
 		if i == c {
 			return true
@@ -30,6 +34,7 @@ func NewOption(names, dest, help string) *Option {
 		HelpText:      help,
 		MetaVarText:   []string{names},
 		PublicNames:   strings.Split(names, " "),
+		ValidChoices:  []interface{}{},
 	}
 	return &f
 }

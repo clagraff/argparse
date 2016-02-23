@@ -6,6 +6,24 @@ import "testing"
 // does and a valid choice is provided, the function returns true. Otherwise,
 // it is expected to return false.
 func TestIsValidChoice(t *testing.T) {
+	expected := 3.14159
+
+	f := NewOption("a", "a", "no choices")
+	if IsValidChoice(*f, expected) != true {
+		t.Error("Was expecting a true boolean as the returned value")
+	}
+
+	f = NewOption("b", "b", "includes valid choice")
+	f.ValidChoices = []interface{}{"foobar", 42, false, 3.14159, nil}
+	if IsValidChoice(*f, expected) != true {
+		t.Error("Was expecting a true boolean as the returned value")
+	}
+
+	f = NewOption("c", "c", "does not valid choice")
+	f.ValidChoices = []interface{}{"fizzbuzz", 666, true, nil}
+	if IsValidChoice(*f, expected) != false {
+		t.Error("Was expecting a false boolean as the returned value")
+	}
 }
 
 // TestNewOption tests the creation of a new option, populated with defaults
