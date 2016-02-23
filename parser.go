@@ -41,7 +41,7 @@ func (p *Parser) GetOption(name string) (*Option, error) {
 		return nil, fmt.Errorf("Invalid option PublicName")
 	}
 	for _, option := range p.Options {
-		if option.PublicName == name {
+		if option.IsPublicName(name) == true {
 			return option, nil
 		}
 	}
@@ -189,7 +189,7 @@ func (p *Parser) Parse(allArgs ...string) error {
 
 	for _, option := range p.Options {
 		if option.IsRequired == true {
-			requiredOptions[option.PublicName] = option
+			requiredOptions[option.DisplayName()] = option
 		}
 		p.Values[option.DestName] = option.DefaultVal
 	}
@@ -202,9 +202,9 @@ func (p *Parser) Parse(allArgs ...string) error {
 			if f.IsPositional == true {
 				continue
 			}
-			if optionName == f.PublicName {
-				if _, ok := requiredOptions[optionName]; ok {
-					delete(requiredOptions, optionName)
+			if f.IsPublicName(optionName) == true {
+				if _, ok := requiredOptions[f.DisplayName()]; ok {
+					delete(requiredOptions, f.DisplayName())
 				}
 				option = f
 				break

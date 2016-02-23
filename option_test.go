@@ -23,7 +23,7 @@ func TestNewOption(t *testing.T) {
 		t.Error("DestName value should match expected name")
 	}
 
-	if f.PublicName != name {
+	if f.PublicNames[0] != name {
 		t.Error("PublicName value should match expected name")
 	}
 
@@ -107,28 +107,28 @@ func TestOptionDisplayName(t *testing.T) {
 		t.Errorf("DisplayName '%s' does not match the expected: '%s'", name, expected)
 	}
 
-	f.PublicName = "f"
+	f.PublicNames = []string{"f"}
 	expected = "-f"
 	name = f.DisplayName()
 	if name != expected {
 		t.Errorf("DisplayName '%s' does not match the expected: '%s'", name, expected)
 	}
 
-	f.PublicName = "foobar"
+	f.PublicNames = []string{"foobar"}
 	expected = "--foobar"
 	name = f.DisplayName()
 	if name != expected {
 		t.Errorf("DisplayName '%s' does not match the expected: '%s'", name, expected)
 	}
 
-	f.PublicName = "f"
+	f.PublicNames = []string{"f"}
 	expected = "f"
 	name = f.Positional().DisplayName()
 	if name != expected {
 		t.Errorf("DisplayName '%s' does not match the expected: '%s'", name, expected)
 	}
 
-	f.PublicName = "foobar"
+	f.PublicNames = []string{"foobar"}
 	expected = "foobar"
 	name = f.Positional().DisplayName()
 	if name != expected {

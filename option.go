@@ -18,7 +18,7 @@ func NewOption(name, help string) *Option {
 		DestName:      name,
 		HelpText:      help,
 		MetaVarText:   []string{name},
-		PublicName:    name,
+		PublicNames:   []string{name},
 	}
 	return &f
 }
@@ -35,7 +35,7 @@ type Option struct {
 	IsPositional    bool
 	MetaVarText     []string
 	PossibleChoices []interface{} // Currently unused. TODO: implement.
-	PublicName      string
+	PublicNames     []string
 }
 
 // Action sets the option's action to the provided action function.
@@ -77,17 +77,26 @@ func (f *Option) Dest(name string) *Option {
 // DisplayName returns the option's public name, prefixed with the appropriate number
 // of hyphen-minus characters.
 func (f *Option) DisplayName() string {
-	var prefix string
+	getDisplayName := func(name string) string {
+		var prefix string
 
-	if f.IsPositional == false {
-		if len(f.PublicName) == 1 {
-			prefix = "-"
-		} else if len(f.PublicName) > 1 {
-			prefix = "--"
+		if f.IsPositional == false {
+			if len(name) == 1 {
+				prefix = "-"
+			} else if len(name) > 1 {
+				prefix = "--"
+			}
 		}
+
+		return join("", prefix, strings.ToLower(name))
 	}
 
-	return join("", prefix, strings.ToLower(f.PublicName))
+	var names []string
+	for _, name := range f.PublicNames {
+		names = append(names, getDisplayName(name))
+	}
+
+	return strings.Join(names, ", ")
 }
 
 // GetUsage returns the usage text for the option. This includes proper formatting
@@ -115,7 +124,7 @@ func (f *Option) GetUsage() string {
 
 		metaLen := len(f.MetaVarText)
 		if metaLen == 0 {
-			f.MetaVarText = []string{f.PublicName}
+			f.MetaVarText = []string{f.DestName}
 			metaLen = 1
 		}
 
@@ -144,7 +153,7 @@ func (f *Option) GetUsage() string {
 		case "+":
 			fallthrough
 		case "*":
-			first := f.PublicName
+			first := f.DestName
 			if len(f.MetaVarText) > 0 {
 				first = f.MetaVarText[0]
 			}
@@ -185,6 +194,15 @@ func (f *Option) GetUsage() string {
 func (f *Option) Help(text string) *Option {
 	f.HelpText = text
 	return f
+}
+
+func (f *Option) IsPublicName(name string) bool {
+	for _, opName := range f.PublicNames {
+		if name == opName {
+			return true
+		}
+	}
+	return false
 }
 
 // MetaVar sets the option's metavar text to the provided string. Additional

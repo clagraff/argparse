@@ -88,8 +88,8 @@ func TestParserGetOption_ValidOption(t *testing.T) {
 
 	if f == nil {
 		t.Error("The retrived option cannot be nil")
-	} else if f.PublicName != "second" {
-		t.Errorf("Expected option name 'second', but retrieved name: %s", f.PublicName)
+	} else if f.PublicNames[0] != "second" {
+		t.Errorf("Expected option name 'second', but retrieved name: %s", f.PublicNames)
 	}
 }
 
