@@ -1,0 +1,74 @@
+# ROADMAP
+## Description
+This document defines the entire current roadmap for the project; itemizing
+all current & target features. The features are segragated into various
+categories of similar functionallity or sane heirachal structures.
+
+Last Updated: 22 FEB 2016
+
+## The Map
+- [ ] Parser
+    - [ ] Support ArgumentParser attribute functionallity
+        - [x] prog
+        - [ ] usage
+        - [x] description
+        - [ ] epilog
+        - [ ] parents
+        - [ ] formatter_class
+        - [ ] prefix_chars
+        - [ ] fromfile_prefix_chars
+        - [ ] argument_default
+        - [ ] conflict_handler
+        - [ ] add_help
+        - [ ] allow_abbrev
+    - [x] Auto-determine Program name
+    - [x] Output entire program usage
+    - [ ] Support parent parsers
+    - [ ] Support multiple prefix characters
+    - [ ] Determine & display conflicting options
+    - [x] Parse multiple short-arguments in single argument flag
+    - [x] Parse from sys.Args by default
+    - [ ] Support sub-parsers / commands
+- [ ] Argument
+    - [ ] Support ARgument attribute functionallity
+        - [x] name
+        - [x] action
+        - [x] nargs
+        - [x] const
+        - [x] default
+        - [ ] type
+        - [ ] choices
+        - [x] required
+        - [x] help
+        - [x] metavar
+        - [x] dest
+    - [x] Support short & long named options
+    - [ ] Associate short & long named options as single option
+    - [ ] Support Nargs options
+        - [x] Any positive integer
+        - [x] "?" - One argument or none
+        - [x] "*" - Any arguments or none
+        - [x] "+" - One or more arguments
+        - [ ] "rR" - Remaining arguments
+    - [ ] Support argument type-asserting
+    - [ ] Support limiting to available argument Choices
+    - [ ] Derive Dest attribute from public name
+    - [ ] Allow for mutually-exclusive arguments
+- [ ] Namespace
+    - [ ] Contain parsed values for arguments
+    - [ ] Provide statically-typed value-returning methods
+- [ ] Actions
+    - [x] store
+    - [x] store_const
+    - [x] store_true
+    - [x] store_false
+    - [x] append
+    - [x] append_const
+    - [ ] count
+    - [x] help
+    - [ ] version
+- [ ] Project milestones
+    - [ ] Documentation / examples
+    - [ ] Unit tests
+        - [ ] Unit testing using Testify package
+    - [ ] Strong code coverage
