@@ -1,4 +1,4 @@
-package parg
+package argparse
 
 import (
 	"fmt"
@@ -6,11 +6,11 @@ import (
 	"strings"
 )
 
-// NewFlag returns a pointer to a new Flag instance, setting the flag's destination
+// NewOption returns a pointer to a new Option instance, setting the option's destination
 // name, public name and metavar text to the provided name, and the help text to the
 // provided help string.
-func NewFlag(name, help string) *Flag {
-	f := Flag{
+func NewOption(name, help string) *Option {
+	f := Option{
 		ArgNum:        "0",
 		ConstVal:      nil,
 		DefaultVal:    nil,
@@ -23,8 +23,8 @@ func NewFlag(name, help string) *Flag {
 	return &f
 }
 
-// Flag contains the necessary attributes for representing a parsable flag.
-type Flag struct {
+// Option contains the necessary attributes for representing a parsable option.
+type Option struct {
 	ArgNum          string
 	ConstVal        interface{}
 	DefaultVal      interface{}
@@ -38,14 +38,14 @@ type Flag struct {
 	PublicName      string
 }
 
-// Action sets the flag's action to the provided action function.
-func (f *Flag) Action(action Action) *Flag {
+// Action sets the option's action to the provided action function.
+func (f *Option) Action(action Action) *Option {
 	f.DesiredAction = action
 	return f
 }
 
-// Choices appends the provided slice as acceptable arguments for the flag.
-func (f *Flag) Choices(choices []interface{}) *Flag {
+// Choices appends the provided slice as acceptable arguments for the option.
+func (f *Option) Choices(choices []interface{}) *Option {
 	f.PossibleChoices = []interface{}{}
 	for _, choice := range choices {
 		f.PossibleChoices = append(f.PossibleChoices, choice)
@@ -53,30 +53,30 @@ func (f *Flag) Choices(choices []interface{}) *Flag {
 	return f
 }
 
-// Const sets the flag's constant value to the provided interface. A flag's constant value
+// Const sets the option's constant value to the provided interface. A option's constant value
 // is only used for certain actions. By default, the constant value is `nil`.
-func (f *Flag) Const(value interface{}) *Flag {
+func (f *Option) Const(value interface{}) *Option {
 	f.ConstVal = value
 	return f
 }
 
-// Default sets the flag's default value. A flag's default value is only used for
+// Default sets the option's default value. A option's default value is only used for
 // certain actions. By default, the default value is `nil`.
-func (f *Flag) Default(value interface{}) *Flag {
+func (f *Option) Default(value interface{}) *Option {
 	f.DefaultVal = value
 	return f
 }
 
-// Dest sets a flag's destination name. This is used as the key for storing the flag's
+// Dest sets a option's destination name. This is used as the key for storing the option's
 // values within the parser.
-func (f *Flag) Dest(name string) *Flag {
+func (f *Option) Dest(name string) *Option {
 	f.DestName = name
 	return f
 }
 
-// DisplayName returns the flag's public name, prefixed with the appropriate number
+// DisplayName returns the option's public name, prefixed with the appropriate number
 // of hyphen-minus characters.
-func (f *Flag) DisplayName() string {
+func (f *Option) DisplayName() string {
 	var prefix string
 
 	if f.IsPositional == false {
@@ -90,11 +90,11 @@ func (f *Flag) DisplayName() string {
 	return join("", prefix, strings.ToLower(f.PublicName))
 }
 
-// GetUsage returns the usage text for the flag. This includes proper formatting
-// of the flag's display name & parameters. For parameters: by default, parameters
-// will be the flag's public name. This can be overridden by modifying the MetaVars
-// slice for the flag.
-func (f *Flag) GetUsage() string {
+// GetUsage returns the usage text for the option. This includes proper formatting
+// of the option's display name & parameters. For parameters: by default, parameters
+// will be the option's public name. This can be overridden by modifying the MetaVars
+// slice for the option.
+func (f *Option) GetUsage() string {
 	var usage []string
 
 	isRequired := f.IsRequired
@@ -181,16 +181,16 @@ func (f *Flag) GetUsage() string {
 	return join("", usage...)
 }
 
-// Help sets the flag's help/usage text.
-func (f *Flag) Help(text string) *Flag {
+// Help sets the option's help/usage text.
+func (f *Option) Help(text string) *Option {
 	f.HelpText = text
 	return f
 }
 
-// MetaVar sets the flag's metavar text to the provided string. Additional
-// metavar strings can be provided, and will be used for flags with more than
+// MetaVar sets the option's metavar text to the provided string. Additional
+// metavar strings can be provided, and will be used for options with more than
 // expected argument.
-func (f *Flag) MetaVar(meta string, metaSlice ...string) *Flag {
+func (f *Option) MetaVar(meta string, metaSlice ...string) *Option {
 	s := []string{meta}
 	for _, text := range metaSlice {
 		s = append(s, text)
@@ -200,12 +200,12 @@ func (f *Flag) MetaVar(meta string, metaSlice ...string) *Flag {
 	return f
 }
 
-// Nargs sets the flag's number of expected arguments. Integers represent
+// Nargs sets the option's number of expected arguments. Integers represent
 // the absolute number of arguments to be expected. The `?` character represents
 // an expection of zero or one arguments. The `*` character represents an expectation
 // of any number or arguments. The `+` character represents an expectation of one
 // or more arguments.
-func (f *Flag) Nargs(nargs string) *Flag {
+func (f *Option) Nargs(nargs string) *Option {
 	// TODO: Allow "r"/"R" for remainder args
 	allowedChars := []string{"?", "*", "+"}
 	for _, char := range allowedChars {
@@ -224,27 +224,27 @@ func (f *Flag) Nargs(nargs string) *Flag {
 	return f
 }
 
-// NotRequired prevents the flag from being required to be present when parsing
+// NotRequired prevents the option from being required to be present when parsing
 // arguments.
-func (f *Flag) NotRequired() *Flag {
+func (f *Option) NotRequired() *Option {
 	f.IsRequired = false
 	return f
 }
 
-// NotPositional disables a flag from being positionally interpretted.
-func (f *Flag) NotPositional() *Flag {
+// NotPositional disables a option from being positionally interpretted.
+func (f *Option) NotPositional() *Option {
 	f.IsPositional = false
 	return f
 }
 
-// Positional enables a flag to be positionally interpretted.
-func (f *Flag) Positional() *Flag {
+// Positional enables a option to be positionally interpretted.
+func (f *Option) Positional() *Option {
 	f.IsPositional = true
 	return f
 }
 
-// Required enables the flag to required to be present when parsing arguments.
-func (f *Flag) Required() *Flag {
+// Required enables the option to required to be present when parsing arguments.
+func (f *Option) Required() *Option {
 	f.IsRequired = true
 	return f
 }

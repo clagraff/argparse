@@ -1,18 +1,18 @@
-package parg
+package argparse
 
 import (
 	"strings"
 	"testing" //import go package for testing related functionality
 )
 
-// TestExtractFlags_NoArgs tests to ensure that when no arguments are provided,
-// no flags or arguments are returned by extractFlags.
-func TestExtractFlags_NoArgs(t *testing.T) {
+// TestExtractOptions_NoArgs tests to ensure that when no arguments are provided,
+// no options or arguments are returned by extractOptions.
+func TestExtractOptions_NoArgs(t *testing.T) {
 	var noArgs []string
-	flags, args := extractFlags(noArgs...)
+	options, args := extractOptions(noArgs...)
 
-	if len(flags) != 0 {
-		t.Error("No flags should have been extracted")
+	if len(options) != 0 {
+		t.Error("No options should have been extracted")
 	}
 
 	if len(args) != 0 {
@@ -20,18 +20,18 @@ func TestExtractFlags_NoArgs(t *testing.T) {
 	}
 }
 
-// TestExtractFlags_OnlyFlags tests to ensure that if only flag arguments are
-// provided, that the same number of flag arguments are returned & with no
-// additional arguments by extractFlags.
-func TestExtractFlags_OnlyFlags(t *testing.T) {
-	onlyFlagArgs := []string{"-f", "--foobar"}
-	flags, args := extractFlags(onlyFlagArgs...)
+// TestExtractOptions_OnlyOptions tests to ensure that if only option arguments are
+// provided, that the same number of option arguments are returned & with no
+// additional arguments by extractOptions.
+func TestExtractOptions_OnlyOptions(t *testing.T) {
+	onlyOptionArgs := []string{"-f", "--foobar"}
+	options, args := extractOptions(onlyOptionArgs...)
 
-	if len(flags) != len(onlyFlagArgs) {
+	if len(options) != len(onlyOptionArgs) {
 		t.Errorf(
-			"%d number of flags expected, but only %d were extracted",
-			len(onlyFlagArgs),
-			len(flags),
+			"%d number of options expected, but only %d were extracted",
+			len(onlyOptionArgs),
+			len(options),
 		)
 	}
 
@@ -40,20 +40,20 @@ func TestExtractFlags_OnlyFlags(t *testing.T) {
 	}
 }
 
-// TestExtractFlags_MutliShortFlags tests to ensure that multiple short-flags
+// TestExtractOptions_MutliShortOptions tests to ensure that multiple short-options
 // residing beside each other are properly recognized and extract individually,
 // and no other arguments are returned.
-func TestExtractFlags_MultiShortFlags(t *testing.T) {
-	shortFlags := []string{"a", "b", "c"}
-	shortFlagArgs := []string{"-" + strings.Join(shortFlags, "")}
+func TestExtractOptions_MultiShortOptions(t *testing.T) {
+	shortOptions := []string{"a", "b", "c"}
+	shortOptionArgs := []string{"-" + strings.Join(shortOptions, "")}
 
-	flags, args := extractFlags(shortFlagArgs...)
+	options, args := extractOptions(shortOptionArgs...)
 
-	if len(flags) != len(shortFlags) {
+	if len(options) != len(shortOptions) {
 		t.Errorf(
-			"%d number of flags expected, but only %d were extracted",
-			len(shortFlags),
-			len(flags),
+			"%d number of options expected, but only %d were extracted",
+			len(shortOptions),
+			len(options),
 		)
 	}
 
@@ -62,12 +62,12 @@ func TestExtractFlags_MultiShortFlags(t *testing.T) {
 	}
 }
 
-// TestExtractFlags_OnlyArgs tests to ensure that if only passive arguments are
+// TestExtractOptions_OnlyArgs tests to ensure that if only passive arguments are
 // provided, that the same number of passive arguments are returned & with no
-// flags extracted by extractFlags.
-func TestExtractFlags_OnlyArgs(t *testing.T) {
+// options extracted by extractOptions.
+func TestExtractOptions_OnlyArgs(t *testing.T) {
 	onlyArgs := []string{"arg1", "arg2", "arg3", "arg4"}
-	flags, args := extractFlags(onlyArgs...)
+	options, args := extractOptions(onlyArgs...)
 
 	if len(args) != len(onlyArgs) {
 		t.Errorf(
@@ -77,25 +77,25 @@ func TestExtractFlags_OnlyArgs(t *testing.T) {
 		)
 	}
 
-	if len(flags) != 0 {
-		t.Error("No flags should have been extracted")
+	if len(options) != 0 {
+		t.Error("No options should have been extracted")
 	}
 }
 
-// TestExtractFlags tests to ensure that the expected number of flags & passive
-// arguments are extracted by extractFlags.
-func TestExtractFlags(t *testing.T) {
+// TestExtractOptions tests to ensure that the expected number of options & passive
+// arguments are extracted by extractOptions.
+func TestExtractOptions(t *testing.T) {
 	allArgs := []string{"-f", "foobar", "--fizzbuzz", "four", "five", "-irtusc"}
-	numFlags := 8
+	numOptions := 8
 	numArgs := 3
 
-	flags, args := extractFlags(allArgs...)
+	options, args := extractOptions(allArgs...)
 
-	if len(flags) != numFlags {
+	if len(options) != numOptions {
 		t.Errorf(
-			"%d number of flags expected, but only %d were extracted",
-			numFlags,
-			len(flags),
+			"%d number of options expected, but only %d were extracted",
+			numOptions,
+			len(options),
 		)
 	}
 

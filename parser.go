@@ -1,6 +1,6 @@
-// Package parg provides functionallity to emulate Python's argparse for
-// setting-up and parsing a program's flags & arguments.
-package parg
+// Package argparse provides functionallity to emulate Python's argparse for
+// setting-up and parsing a program's options & arguments.
+package argparse
 
 import (
 	"fmt"
@@ -8,41 +8,41 @@ import (
 	"strings"
 )
 
-// Parser contains program-level settings and information, stores flags,
+// Parser contains program-level settings and information, stores options,
 // and values collected upon parsing.
 type Parser struct {
 	ProgramName string
 	AllowAbbrev bool
-	Flags       []*Flag
+	Options     []*Option
 	UsageText   string
 	Values      map[string]interface{}
 }
 
-// AddHelp adds a new flag to output usage information for the current parser
-// and each of its flags.
+// AddHelp adds a new option to output usage information for the current parser
+// and each of its options.
 func (p *Parser) AddHelp() *Parser {
-	helpFlag := NewFlag("help", "Display usage information").Action(ShowHelp).Dest("help")
-	shortHelpFlag := NewFlag("h", "Display usage information").Action(ShowHelp).Dest("help")
+	helpOption := NewOption("help", "Display usage information").Action(ShowHelp).Dest("help")
+	shortHelpOption := NewOption("h", "Display usage information").Action(ShowHelp).Dest("help")
 
-	p.Flags = append(p.Flags, helpFlag, shortHelpFlag)
+	p.Options = append(p.Options, helpOption, shortHelpOption)
 	return p
 }
 
-// AddFlag appends the provided flag to the current parser.
-func (p *Parser) AddFlag(f *Flag) *Parser {
-	p.Flags = append(p.Flags, f)
+// AddOption appends the provided option to the current parser.
+func (p *Parser) AddOption(f *Option) *Parser {
+	p.Options = append(p.Options, f)
 	return p
 }
 
-// GetFlag retrieves the first flag with a public name matching the specified
+// GetOption retrieves the first option with a public name matching the specified
 // name, or will otherwise return an error.
-func (p *Parser) GetFlag(name string) (*Flag, error) {
+func (p *Parser) GetOption(name string) (*Option, error) {
 	if len(name) <= 0 {
-		return nil, fmt.Errorf("Invalid flag PublicName")
+		return nil, fmt.Errorf("Invalid option PublicName")
 	}
-	for _, flag := range p.Flags {
-		if flag.PublicName == name {
-			return flag, nil
+	for _, option := range p.Options {
+		if option.PublicName == name {
+			return option, nil
 		}
 	}
 
@@ -50,14 +50,14 @@ func (p *Parser) GetFlag(name string) (*Flag, error) {
 }
 
 // GetHelp returns a string containing the parser's description text,
-// and the usage information for each flag currently incorperated within
+// and the usage information for each option currently incorperated within
 // the parser.
 func (p *Parser) GetHelp() string {
 	// Get screen width to determine max line lengths later.
 	screenWidth := getScreenWidth()
 
-	var positional []*Flag
-	var notPositional []*Flag
+	var positional []*Option
+	var notPositional []*Option
 	var usage []string
 
 	header := []string{"usage:", p.ProgramName}
@@ -68,7 +68,7 @@ func (p *Parser) GetHelp() string {
 	var posArgs []string
 	longest := 0
 
-	for _, arg := range p.Flags {
+	for _, arg := range p.Options {
 		//if arg.IsPositional == false {
 		if arg.IsPositional == false {
 			notPositional = append(notPositional, arg)
@@ -179,54 +179,54 @@ func (p *Parser) GetHelp() string {
 	return join("", usage...)
 }
 
-// Parser accepts a slice of strings as flags and arguments to be parsed. The
-// parser will call each encountered flag's action. Unexpected flags will
+// Parser accepts a slice of strings as options and arguments to be parsed. The
+// parser will call each encountered option's action. Unexpected options will
 // cause an error. All errors are returned.
 func (p *Parser) Parse(allArgs ...string) error {
 	p.Values = make(map[string]interface{})
-	requiredFlags := make(map[string]*Flag)
+	requiredOptions := make(map[string]*Option)
 	var err error
 
-	for _, flag := range p.Flags {
-		if flag.IsRequired == true {
-			requiredFlags[flag.PublicName] = flag
+	for _, option := range p.Options {
+		if option.IsRequired == true {
+			requiredOptions[option.PublicName] = option
 		}
-		p.Values[flag.DestName] = flag.DefaultVal
+		p.Values[option.DestName] = option.DefaultVal
 	}
 
-	flagNames, args := extractFlags(allArgs...)
-	for _, flagName := range flagNames {
-		var flag *Flag
+	optionNames, args := extractOptions(allArgs...)
+	for _, optionName := range optionNames {
+		var option *Option
 
-		for _, f := range p.Flags {
+		for _, f := range p.Options {
 			if f.IsPositional == true {
 				continue
 			}
-			if flagName == f.PublicName {
-				if _, ok := requiredFlags[flagName]; ok {
-					delete(requiredFlags, flagName)
+			if optionName == f.PublicName {
+				if _, ok := requiredOptions[optionName]; ok {
+					delete(requiredOptions, optionName)
 				}
-				flag = f
+				option = f
 				break
 			}
 		}
 
-		if flag == nil {
-			return fmt.Errorf("flag '%s' is not a valid flag", flagName)
+		if option == nil {
+			return fmt.Errorf("option '%s' is not a valid option", optionName)
 		}
 
-		args, err = flag.DesiredAction(p, flag, args...)
+		args, err = option.DesiredAction(p, option, args...)
 		if err != nil {
 			return err
 		}
 	}
 
-	for _, f := range p.Flags {
+	for _, f := range p.Options {
 		if f.IsPositional == false {
 			continue
 		}
-		if _, ok := requiredFlags[f.DestName]; ok {
-			delete(requiredFlags, f.DestName)
+		if _, ok := requiredOptions[f.DestName]; ok {
+			delete(requiredOptions, f.DestName)
 		}
 		args, err = f.DesiredAction(p, f, args...)
 		if err != nil {
@@ -234,9 +234,9 @@ func (p *Parser) Parse(allArgs ...string) error {
 		}
 	}
 
-	if len(requiredFlags) != 0 {
-		for _, flag := range requiredFlags {
-			return fmt.Errorf("flag '%s' is required but was not present", flag.DisplayName())
+	if len(requiredOptions) != 0 {
+		for _, option := range requiredOptions {
+			return fmt.Errorf("option '%s' is required but was not present", option.DisplayName())
 		}
 	}
 	return nil
