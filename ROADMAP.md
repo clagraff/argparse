@@ -1,10 +1,18 @@
 # ROADMAP
-## Description
+## Overview
 This document defines the entire current roadmap for the project; itemizing
 all current & target features. The features are segragated into various
 categories of similar functionallity or sane heirachal structures.
 
 Last Updated: 22 FEB 2016
+
+## Description
+The map below illistrates the main goals and milestones of the project. Once 
+each level of objectives has been meet, that level's parent can be marked-off.
+
+The main goal of this project is to provide an interface similar to Python's
+argparse pacakge. As such, code functionallity & attributes found in the
+argparse packaged are included.
 
 ## The Map
 - [ ] Parser
