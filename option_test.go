@@ -75,13 +75,13 @@ func TestOptionChoices(t *testing.T) {
 	f := Option{}
 	choices := []interface{}{"foobar", true, 12}
 
-	if len(f.PossibleChoices) != 0 {
+	if len(f.ValidChoices) != 0 {
 		t.Error("Option should not contain any choices yet")
 	}
 
 	f.Choices(choices)
-	if len(f.PossibleChoices) != len(choices) {
-		t.Errorf("Option contains %d choices, but is expected a total of %d", len(f.PossibleChoices), len(choices))
+	if len(f.ValidChoices) != len(choices) {
+		t.Errorf("Option contains %d choices, but is expected a total of %d", len(f.ValidChoices), len(choices))
 	}
 }
 

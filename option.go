@@ -41,18 +41,17 @@ func NewOption(names, dest, help string) *Option {
 
 // Option contains the necessary attributes for representing a parsable option.
 type Option struct {
-	ArgNum          string
-	ConstVal        interface{}
-	DefaultVal      interface{}
-	DesiredAction   Action
-	DestName        string
-	HelpText        string
-	IsRequired      bool
-	IsPositional    bool
-	MetaVarText     []string
-	PossibleChoices []interface{} // Currently unused. TODO: implement.
-	PublicNames     []string
-	ValidChoices    []interface{}
+	ArgNum        string
+	ConstVal      interface{}
+	DefaultVal    interface{}
+	DesiredAction Action
+	DestName      string
+	HelpText      string
+	IsRequired    bool
+	IsPositional  bool
+	MetaVarText   []string
+	PublicNames   []string
+	ValidChoices  []interface{}
 }
 
 // Action sets the option's action to the provided action function.
@@ -63,9 +62,9 @@ func (f *Option) Action(action Action) *Option {
 
 // Choices appends the provided slice as acceptable arguments for the option.
 func (f *Option) Choices(choices []interface{}) *Option {
-	f.PossibleChoices = []interface{}{}
+	f.ValidChoices = []interface{}{}
 	for _, choice := range choices {
-		f.PossibleChoices = append(f.PossibleChoices, choice)
+		f.ValidChoices = append(f.ValidChoices, choice)
 	}
 	return f
 }
