@@ -6,95 +6,95 @@ import (
 	"testing"
 ) //import go package for testing related functionality
 
-// TestParserAddHelp tests the AddHelp method to ensure two help flags
-// are appended to the parser, a short flag & a long flag.
+// TestParserAddHelp tests the AddHelp method to ensure two help options
+// are appended to the parser, a short option & a long option.
 func TestParserAddHelp(t *testing.T) {
 	p := Parser{}
-	if len(p.Flags) != 0 {
-		t.Error("Parser should not contain any flags")
+	if len(p.Options) != 0 {
+		t.Error("Parser should not contain any options")
 	}
 
 	p.AddHelp()
-	if len(p.Flags) != 2 {
-		t.Errorf("Expected 2 flags, but only has %d", len(p.Flags))
+	if len(p.Options) != 2 {
+		t.Errorf("Expected 2 options, but only has %d", len(p.Options))
 	}
 }
 
-// TestParserAddFlag tests the AddFlah method to ensure that flags can be appended
+// TestParserAddOption tests the AddFlah method to ensure that options can be appended
 // to a parser.
-func TestParserAddFlag(t *testing.T) {
+func TestParserAddOption(t *testing.T) {
 	p := Parser{}
 
-	if len(p.Flags) != 0 {
-		t.Error("Parser should not contain any flags")
+	if len(p.Options) != 0 {
+		t.Error("Parser should not contain any options")
 	}
 
-	f1 := Flag{}
-	f2 := Flag{}
+	f1 := Option{}
+	f2 := Option{}
 
-	p.AddFlag(&f1)
-	if len(p.Flags) != 1 {
-		t.Error("Parser should contain one flag")
+	p.AddOption(&f1)
+	if len(p.Options) != 1 {
+		t.Error("Parser should contain one option")
 	}
 
-	p.AddFlag(&f2)
-	if len(p.Flags) != 2 {
-		t.Error("Parser should contain two flags")
+	p.AddOption(&f2)
+	if len(p.Options) != 2 {
+		t.Error("Parser should contain two options")
 	}
 }
 
-// TestParserGetFlag_InvalidFlag tests retreival of an error and nil for a flag
+// TestParserGetOption_InvalidOption tests retreival of an error and nil for a option
 // from a Parser instance by specifying an incorrect PublicName attribute.
-func TestParserGetFlag_InvalidFlag(t *testing.T) {
-	f1 := NewFlag("first", "this is the first flag")
-	f2 := NewFlag("second", "this is the second flag")
-	f3 := NewFlag("three", "this is the third flag")
+func TestParserGetOption_InvalidOption(t *testing.T) {
+	f1 := NewOption("first", "this is the first option")
+	f2 := NewOption("second", "this is the second option")
+	f3 := NewOption("three", "this is the third option")
 
 	p := Parser{}
-	p.AddFlag(f1).AddFlag(f2).AddFlag(f3)
+	p.AddOption(f1).AddOption(f2).AddOption(f3)
 
-	if len(p.Flags) != 3 {
-		t.Error("Parser should contain three flags")
+	if len(p.Options) != 3 {
+		t.Error("Parser should contain three options")
 	}
 
-	f, err := p.GetFlag("twenty")
+	f, err := p.GetOption("twenty")
 	if err == nil {
 		t.Errorf("An error was expected but did not occur.")
 	}
 
 	if f != nil {
-		t.Error("The retrived flag was not nil")
+		t.Error("The retrived option was not nil")
 	}
 }
 
-// TestParserGetFlag_ValidFlag tests retreival of flags from a Parser instance by specifying
-// their PublicName attribute. A valid flag PublicName will be used to retrieve a flag.
-func TestParserGetFlag_ValidFlag(t *testing.T) {
-	f1 := NewFlag("first", "this is the first flag")
-	f2 := NewFlag("second", "this is the second flag")
-	f3 := NewFlag("three", "this is the third flag")
+// TestParserGetOption_ValidOption tests retreival of options from a Parser instance by specifying
+// their PublicName attribute. A valid option PublicName will be used to retrieve a option.
+func TestParserGetOption_ValidOption(t *testing.T) {
+	f1 := NewOption("first", "this is the first option")
+	f2 := NewOption("second", "this is the second option")
+	f3 := NewOption("three", "this is the third option")
 
 	p := Parser{}
-	p.AddFlag(f1).AddFlag(f2).AddFlag(f3)
+	p.AddOption(f1).AddOption(f2).AddOption(f3)
 
-	if len(p.Flags) != 3 {
-		t.Error("Parser should contain three flags")
+	if len(p.Options) != 3 {
+		t.Error("Parser should contain three options")
 	}
 
-	f, err := p.GetFlag("second")
+	f, err := p.GetOption("second")
 	if err != nil {
 		t.Errorf("An unexpected error occurred: %s", err.Error())
 	}
 
 	if f == nil {
-		t.Error("The retrived flag cannot be nil")
+		t.Error("The retrived option cannot be nil")
 	} else if f.PublicName != "second" {
-		t.Errorf("Expected flag name 'second', but retrieved name: %s", f.PublicName)
+		t.Errorf("Expected option name 'second', but retrieved name: %s", f.PublicName)
 	}
 }
 
 // TestParserGetHelp tests the GetHelp method to ensure that the parser will
-// return a help-string containing usage information and flag-dependent
+// return a help-string containing usage information and option-dependent
 // help text.
 func TestParserGetHelp(t *testing.T) {
 	p := NewParser("this is a description of the program")
@@ -107,7 +107,7 @@ func TestParserGetHelp(t *testing.T) {
 }
 
 // TestParserParse tests the Parse method to ensure that arguments provided to
-// the parser are properly parsed and the necessary actions for all flags are
+// the parser are properly parsed and the necessary actions for all options are
 // executed.
 func TestParserParse(t *testing.T) {
 	// TODO: create an actual test.

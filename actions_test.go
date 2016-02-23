@@ -3,11 +3,11 @@ package parg
 import "testing"
 
 // TestStore_OneNargs tests the Store Action will store the expected value and
-// return the appropriate args & error when operating upon a flag with
+// return the appropriate args & error when operating upon a option with
 // one expected argument.
 func TestStore_OneNargs(t *testing.T) {
 	p := NewParser("parser")
-	f := NewFlag("flag", "flag").Nargs("1")
+	f := NewOption("option", "option").Nargs("1")
 	args := []string{"foobar"}
 
 	args, err := Store(p, f, args...)
@@ -32,11 +32,11 @@ func TestStore_OneNargs(t *testing.T) {
 }
 
 // TestStore_ThreeNargs tests the Store Action will store the expected value and
-// return the appropriate args & error when operating upon a flag with
+// return the appropriate args & error when operating upon a option with
 // three  expected arguments.
 func TestStore_ThreeNargs(t *testing.T) {
 	p := NewParser("parser")
-	f := NewFlag("flag", "flag").Nargs("3")
+	f := NewOption("option", "option").Nargs("3")
 	args := []string{"foo", "bar", "fizzbuzz"}
 
 	args, err := Store(p, f, args...)
@@ -61,11 +61,11 @@ func TestStore_ThreeNargs(t *testing.T) {
 }
 
 // TestStore_AnyNargs tests the Store Action will store the expected value and
-// return the appropriate args & error when operating upon a flag with
+// return the appropriate args & error when operating upon a option with
 // any number of expected arguments.
 func TestStore_AnyNargs(t *testing.T) {
 	p := NewParser("parser")
-	f := NewFlag("flag", "flag").Nargs("*")
+	f := NewOption("option", "option").Nargs("*")
 	args := []string{"foo", "bar", "fizz", "buzz", "hello", "world"}
 
 	args, err := Store(p, f, args...)
@@ -90,11 +90,11 @@ func TestStore_AnyNargs(t *testing.T) {
 }
 
 // TestStore_LeastOneNargs tests the Store Action will store the expected value and
-// return the appropriate args & error when operating upon a flag with
+// return the appropriate args & error when operating upon a option with
 // at least one number of expected arguments.
 func TestStore_LeastOneNargs(t *testing.T) {
 	p := NewParser("parser")
-	f := NewFlag("flag", "flag").Nargs("+")
+	f := NewOption("option", "option").Nargs("+")
 	args := []string{"foo", "fizz", "world"}
 
 	args, err := Store(p, f, args...)
@@ -118,10 +118,10 @@ func TestStore_LeastOneNargs(t *testing.T) {
 	}
 }
 
-// TestStoreConst tests the StoreConst Action will store a flag's ConstValue.
+// TestStoreConst tests the StoreConst Action will store a option's ConstValue.
 func TestStoreConst(t *testing.T) {
 	p := NewParser("parser")
-	f := NewFlag("flag", "flag").Nargs("0").Const("hello world")
+	f := NewOption("option", "option").Nargs("0").Const("hello world")
 	args := []string{}
 
 	args, err := StoreConst(p, f, args...)
@@ -142,7 +142,7 @@ func TestStoreConst(t *testing.T) {
 // TestStoreFalse tests the StoreFalse Action will store a false boolean.
 func TestStoreFalse(t *testing.T) {
 	p := NewParser("parser")
-	f := NewFlag("flag", "flag").Nargs("0")
+	f := NewOption("option", "option").Nargs("0")
 	args := []string{}
 
 	args, err := StoreFalse(p, f, args...)
@@ -163,7 +163,7 @@ func TestStoreFalse(t *testing.T) {
 // TestStoreTrue tests the StoreFalse Action will store a true boolean.
 func TestStoreTrue(t *testing.T) {
 	p := NewParser("parser")
-	f := NewFlag("flag", "flag").Nargs("0")
+	f := NewOption("option", "option").Nargs("0")
 	args := []string{}
 
 	args, err := StoreTrue(p, f, args...)
@@ -182,11 +182,11 @@ func TestStoreTrue(t *testing.T) {
 }
 
 // TestAppend_OneNargs tests the Append Action will store the expected value and
-// return the appropriate args & error when operating upon a flag with
+// return the appropriate args & error when operating upon a option with
 // one expected argument.
 func TestAppend_OneNargs(t *testing.T) {
 	p := NewParser("parser")
-	f := NewFlag("flag", "flag").Nargs("1")
+	f := NewOption("option", "option").Nargs("1")
 	args := []string{"foobar"}
 
 	args, err := Append(p, f, args...)
@@ -211,11 +211,11 @@ func TestAppend_OneNargs(t *testing.T) {
 }
 
 // TestAppend_ThreeNargs tests the Store Action will store the expected value and
-// return the appropriate args & error when operating upon a flag with
+// return the appropriate args & error when operating upon a option with
 // three  expected arguments.
 func TestAppend_ThreeNargs(t *testing.T) {
 	p := NewParser("parser")
-	f := NewFlag("flag", "flag").Nargs("3")
+	f := NewOption("option", "option").Nargs("3")
 	args := []string{"foo", "bar", "fizzbuzz"}
 
 	args, err := Append(p, f, args...)
@@ -240,11 +240,11 @@ func TestAppend_ThreeNargs(t *testing.T) {
 }
 
 // TestStore_AnyNargs tests the Store Action will store the expected value and
-// return the appropriate args & error when operating upon a flag with
+// return the appropriate args & error when operating upon a option with
 // any number of expected arguments.
 func TestAppend_AnyNargs(t *testing.T) {
 	p := NewParser("parser")
-	f := NewFlag("flag", "flag").Nargs("*")
+	f := NewOption("option", "option").Nargs("*")
 	args := []string{"foo", "bar", "fizz", "buzz", "hello", "world"}
 
 	args, err := Append(p, f, args...)
@@ -269,11 +269,11 @@ func TestAppend_AnyNargs(t *testing.T) {
 }
 
 // TestStore_LeastOneNargs tests the Store Action will store the expected value and
-// return the appropriate args & error when operating upon a flag with
+// return the appropriate args & error when operating upon a option with
 // at least one number of expected arguments.
 func TestAppend_LeastOneNargs(t *testing.T) {
 	p := NewParser("parser")
-	f := NewFlag("flag", "flag").Nargs("+")
+	f := NewOption("option", "option").Nargs("+")
 	args := []string{"foo", "fizz", "world"}
 
 	args, err := Append(p, f, args...)
