@@ -120,6 +120,20 @@ func TestFlagDisplayName(t *testing.T) {
 	if name != expected {
 		t.Errorf("DisplayName '%s' does not match the expected: '%s'", name, expected)
 	}
+
+	f.PublicName = "f"
+	expected = "f"
+	name = f.Positional().DisplayName()
+	if name != expected {
+		t.Errorf("DisplayName '%s' does not match the expected: '%s'", name, expected)
+	}
+
+	f.PublicName = "foobar"
+	expected = "foobar"
+	name = f.Positional().DisplayName()
+	if name != expected {
+		t.Errorf("DisplayName '%s' does not match the expected: '%s'", name, expected)
+	}
 }
 
 // TestFlagGetUsage tests the retrival of a flag's usage string via the GetUsage method.
@@ -186,8 +200,8 @@ func TestFlagNargs(t *testing.T) {
 }
 
 // TestFlagNotRequired tests that a flag's IsRequired boolean is updated to
-// become 'true' when the Required method is called.
-func TestFlagNot(t *testing.T) {
+// become 'false' when the Required method is called.
+func TestFlagNotRequired(t *testing.T) {
 	f := Flag{}
 
 	if f.IsRequired != false {
@@ -201,6 +215,42 @@ func TestFlagNot(t *testing.T) {
 
 	if f.IsRequired != expected {
 		t.Errorf("Flag IsRequired is '%t', but was expected to be: '%t'", f.IsRequired, expected)
+	}
+}
+
+// TestFlagNotPositional tests that a flag's IsPositional boolean is updated to
+// become 'false' when the NotPositional method is called.
+func TestFlagNotPositional(t *testing.T) {
+	f := Flag{}
+
+	if f.IsPositional != false {
+		t.Error("Flag IsPositional should be false upon initialization")
+	}
+
+	f.IsPositional = true
+
+	expected := false
+	f.NotPositional()
+
+	if f.IsPositional != expected {
+		t.Errorf("Flag IsPositional is '%t', but was expected to be: '%t'", f.IsPositional, expected)
+	}
+}
+
+// TestFlagPositional tests that a flag's IsPositional boolean is updated to
+// become 'true' when the Positional method is called.
+func TestFlagPositional(t *testing.T) {
+	f := Flag{}
+
+	if f.IsPositional != false {
+		t.Error("Flag IsPositional should be false upon initialization")
+	}
+
+	expected := true
+	f.Positional()
+
+	if f.IsPositional != expected {
+		t.Errorf("Flag IsPositional is '%t', but was expected to be: '%t'", f.IsPositional, expected)
 	}
 }
 

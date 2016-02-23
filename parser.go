@@ -70,7 +70,14 @@ func (p *Parser) GetHelp() string {
 
 	for _, arg := range p.Flags {
 		//if arg.IsPositional == false {
-		notPositional = append(notPositional, arg)
+		if arg.IsPositional == false {
+			notPositional = append(notPositional, arg)
+		} else {
+			positional = append(positional, arg)
+		}
+	}
+
+	for _, arg := range notPositional {
 		name := arg.GetUsage()
 		if len(name) > longest {
 			longest = len(name)
@@ -82,6 +89,21 @@ func (p *Parser) GetHelp() string {
 		if headerLen+len(argUsg) > screenWidth {
 			headerLen = headerIndent
 			notPosArgs = append(notPosArgs, join("", "\n", spacer(headerIndent)))
+		}
+	}
+
+	for _, arg := range positional {
+		name := arg.GetUsage()
+		if len(name) > longest {
+			longest = len(name)
+		}
+
+		argUsg := arg.GetUsage()
+		posArgs = append(posArgs, arg.GetUsage())
+		headerLen = headerLen + len(argUsg)
+		if headerLen+len(argUsg) > screenWidth {
+			headerLen = headerIndent
+			posArgs = append(posArgs, join("", "\n", spacer(headerIndent)))
 		}
 	}
 
@@ -113,7 +135,14 @@ func (p *Parser) GetHelp() string {
 			if longest > screenWidth {
 				lines = append(lines, "\n", spacer(longest))
 			}
-			lines = append(lines, help[i], "\n")
+
+			helpLines := wordWrap(help[i], screenWidth-longest)
+			lines = append(lines, helpLines[0], "\n")
+			if len(helpLines) > 1 {
+				for _, helpLine := range helpLines[1:len(helpLines)] {
+					lines = append(lines, spacer(longest), helpLine, "\n")
+				}
+			}
 		}
 		usage = append(usage, lines...)
 	}
@@ -156,6 +185,7 @@ func (p *Parser) GetHelp() string {
 func (p *Parser) Parse(allArgs ...string) error {
 	p.Values = make(map[string]interface{})
 	requiredFlags := make(map[string]*Flag)
+	var err error
 
 	for _, flag := range p.Flags {
 		if flag.IsRequired == true {
@@ -169,6 +199,9 @@ func (p *Parser) Parse(allArgs ...string) error {
 		var flag *Flag
 
 		for _, f := range p.Flags {
+			if f.IsPositional == true {
+				continue
+			}
 			if flagName == f.PublicName {
 				if _, ok := requiredFlags[flagName]; ok {
 					delete(requiredFlags, flagName)
@@ -182,7 +215,20 @@ func (p *Parser) Parse(allArgs ...string) error {
 			return fmt.Errorf("flag '%s' is not a valid flag", flagName)
 		}
 
-		_, err := flag.DesiredAction(p, flag, args...)
+		args, err = flag.DesiredAction(p, flag, args...)
+		if err != nil {
+			return err
+		}
+	}
+
+	for _, f := range p.Flags {
+		if f.IsPositional == false {
+			continue
+		}
+		if _, ok := requiredFlags[f.DestName]; ok {
+			delete(requiredFlags, f.DestName)
+		}
+		args, err = f.DesiredAction(p, f, args...)
 		if err != nil {
 			return err
 		}
