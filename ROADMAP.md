@@ -51,7 +51,7 @@ argparse packaged are included.
         - [x] metavar
         - [x] dest
     - [x] Support short & long named options
-    - [ ] Associate short & long named options as single option
+    - [x] Associate short & long named options as single option
     - [ ] Support Nargs options
         - [x] Any positive integer
         - [x] "?" - One argument or none

@@ -8,8 +8,9 @@ import "testing"
 // and appropriate name and description as provided.
 func TestNewOption(t *testing.T) {
 	name := "option1"
+	dest := "opt dest"
 	desc := "my option"
-	f := NewOption(name, desc)
+	f := NewOption(name, dest, desc)
 
 	if f.DefaultVal != nil {
 		t.Error("Default value should be nil")
@@ -19,11 +20,11 @@ func TestNewOption(t *testing.T) {
 		t.Error("Constant value should be nil")
 	}
 
-	if f.DestName != name {
+	if f.DestName != dest {
 		t.Error("DestName value should match expected name")
 	}
 
-	if f.PublicName != name {
+	if f.PublicNames[0] != name {
 		t.Error("PublicName value should match expected name")
 	}
 
@@ -107,28 +108,28 @@ func TestOptionDisplayName(t *testing.T) {
 		t.Errorf("DisplayName '%s' does not match the expected: '%s'", name, expected)
 	}
 
-	f.PublicName = "f"
+	f.PublicNames = []string{"f"}
 	expected = "-f"
 	name = f.DisplayName()
 	if name != expected {
 		t.Errorf("DisplayName '%s' does not match the expected: '%s'", name, expected)
 	}
 
-	f.PublicName = "foobar"
+	f.PublicNames = []string{"foobar"}
 	expected = "--foobar"
 	name = f.DisplayName()
 	if name != expected {
 		t.Errorf("DisplayName '%s' does not match the expected: '%s'", name, expected)
 	}
 
-	f.PublicName = "f"
+	f.PublicNames = []string{"f"}
 	expected = "f"
 	name = f.Positional().DisplayName()
 	if name != expected {
 		t.Errorf("DisplayName '%s' does not match the expected: '%s'", name, expected)
 	}
 
-	f.PublicName = "foobar"
+	f.PublicNames = []string{"foobar"}
 	expected = "foobar"
 	name = f.Positional().DisplayName()
 	if name != expected {
@@ -138,7 +139,7 @@ func TestOptionDisplayName(t *testing.T) {
 
 // TestOptionGetUsage tests the retrival of a option's usage string via the GetUsage method.
 func TestOptionGetUsage(t *testing.T) {
-	f := NewOption("foobar", "Activate a foobar boolean")
+	f := NewOption("foobar", "foobar dest", "Activate a foobar boolean")
 
 	if len(f.GetUsage()) <= 0 {
 		t.Error("Option's returned usage should not be empty")
