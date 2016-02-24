@@ -2,6 +2,7 @@ package argparse
 
 import (
 	"fmt"
+	"reflect"
 	"strconv"
 	"strings"
 )
@@ -19,6 +20,37 @@ func ValidateChoice(f Option, i interface{}) error {
 		}
 	}
 	return fmt.Errorf("Value: '%v' must be one of: %v", i, f.ValidChoices)
+}
+
+// AssertType attempt to type-convert the string argument to the flag's desired
+// type. It will return an error if the provided interface value does not
+// satisfy the Option's expected Reflect.Kind type.
+func AssertType(f Option, arg string) (interface{}, error) {
+	switch f.ExpectedType {
+	case reflect.Invalid, reflect.String:
+		return arg, nil
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		if v, err := strconv.Atoi(arg); err == nil {
+			return v, nil
+		}
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		if v, err := strconv.ParseUint(arg, 10, 0); err == nil {
+			return v, nil
+		}
+	case reflect.Float32:
+		if v, err := strconv.ParseFloat(arg, 32); err == nil {
+			return v, nil
+		}
+	case reflect.Float64:
+		if v, err := strconv.ParseFloat(arg, 64); err == nil {
+			return v, nil
+		}
+	case reflect.Bool:
+		if v, err := strconv.ParseBool(arg); err == nil {
+			return v, nil
+		}
+	}
+	return nil, fmt.Errorf("Value: '%v' must be of type: %s", arg, f.ExpectedType.String())
 }
 
 // NewOption instantiates a new Option pointer, initializing it as a boolean
@@ -46,6 +78,7 @@ type Option struct {
 	DefaultVal    interface{}
 	DesiredAction Action
 	DestName      string
+	ExpectedType  reflect.Kind
 	HelpText      string
 	IsRequired    bool
 	IsPositional  bool
@@ -308,4 +341,31 @@ func (f *Option) Required() *Option {
 // String outputs a string-serialized version of the Option.
 func (f *Option) String() string {
 	return join(" ", f.GetUsage(), f.HelpText)
+}
+
+// Type sets the expected reflect.Kind type an option will accept.
+func (f *Option) Type(kind reflect.Kind) *Option {
+	invalidKinds := []reflect.Kind{
+		reflect.Uintptr,
+		reflect.Complex64,
+		reflect.Complex128,
+		reflect.Array,
+		reflect.Chan,
+		reflect.Func,
+		reflect.Interface,
+		reflect.Map,
+		reflect.Ptr,
+		reflect.Slice,
+		reflect.Struct,
+		reflect.UnsafePointer,
+	}
+
+	for _, bad := range invalidKinds {
+		if kind == bad {
+			panic(fmt.Sprintf("Cannot use kind: '%s' as a valid type", kind.String()))
+		}
+	}
+
+	f.ExpectedType = kind
+	return f
 }

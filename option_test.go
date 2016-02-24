@@ -1,11 +1,14 @@
 package argparse
 
-import "testing"
+import (
+	"reflect"
+	"testing"
+)
 
 // TestIsValidChoice ensures that when an option has no choices, or when it
 // does and a valid choice is provided, the function returns true. Otherwise,
 // it is expected to return false.
-func TestValidChoice(t *testing.T) {
+func TestValidateChoice(t *testing.T) {
 	expected := 3.14159
 
 	f := NewOption("a", "a", "no choices")
@@ -23,6 +26,31 @@ func TestValidChoice(t *testing.T) {
 	f.ValidChoices = []interface{}{"fizzbuzz", 666, true, nil}
 	if ValidateChoice(*f, expected) == nil {
 		t.Error("An error was expected but not provided")
+	}
+}
+
+// TestAssertType
+func TestAssertType(t *testing.T) {
+	f := NewOption("name", "dest", "help")
+
+	f.Type(reflect.Invalid)
+	if _, err := AssertType(*f, "acceptable"); err != nil {
+		t.Error("An error was returned but not expected")
+	}
+
+	f.Type(reflect.Int)
+	if _, err := AssertType(*f, "42"); err != nil {
+		t.Error("An error was returned but not expected")
+	}
+
+	f.Type(reflect.Bool)
+	if _, err := AssertType(*f, "True"); err != nil {
+		t.Error("An error was returned but not expected")
+	}
+
+	f.Type(reflect.Float32)
+	if _, err := AssertType(*f, "this is invalid"); err == nil {
+		t.Error("An error was expected but not returned")
 	}
 }
 
