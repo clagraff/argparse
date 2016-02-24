@@ -20,6 +20,9 @@ func Store(p *Parser, f *Option, args ...string) ([]string, error) {
 		panic(fmt.Sprintf("option '%s' must expect at least one argument", f.DisplayName()))
 	} else if f.ArgNum == "?" {
 		if len(args) > 0 {
+			if err := ValidateChoice(*f, args[0]); err != nil {
+				return args, err
+			}
 			p.Values[f.DestName] = args[0]
 			return args[1:], nil
 		}
@@ -30,6 +33,9 @@ func Store(p *Parser, f *Option, args ...string) ([]string, error) {
 
 		var values []interface{}
 		for len(args) > 0 {
+			if err := ValidateChoice(*f, args[0]); err != nil {
+				return args, err
+			}
 			values = append(values, args[0])
 			args = args[1:]
 		}
@@ -45,6 +51,9 @@ func Store(p *Parser, f *Option, args ...string) ([]string, error) {
 		if num > 1 {
 			var values []interface{}
 			for _, v := range args[0:num] {
+				if err := ValidateChoice(*f, v); err != nil {
+					return args, err
+				}
 				values = append(values, v)
 			}
 			p.Values[f.DestName] = values
@@ -116,6 +125,9 @@ func Append(p *Parser, f *Option, args ...string) ([]string, error) {
 
 		count := 0
 		for count < num {
+			if err := ValidateChoice(*f, args[0]); err != nil {
+				return args, err
+			}
 			appendValue(p, f, args[0])
 			args = args[1:]
 			count++
@@ -126,6 +138,9 @@ func Append(p *Parser, f *Option, args ...string) ([]string, error) {
 		return args, nil
 	} else if f.ArgNum == "?" {
 		if len(args) > 0 {
+			if err := ValidateChoice(*f, args[0]); err != nil {
+				return args, err
+			}
 			appendValue(p, f, args[0])
 			args = args[1:]
 		} else {
@@ -137,6 +152,9 @@ func Append(p *Parser, f *Option, args ...string) ([]string, error) {
 		}
 
 		for len(args) > 0 {
+			if err := ValidateChoice(*f, args[0]); err != nil {
+				return args, err
+			}
 			appendValue(p, f, args[0])
 			args = args[1:]
 		}

@@ -6,19 +6,19 @@ import (
 	"strings"
 )
 
-// IsValidChoice returns a boolean indicating if the provided interface value
-// exists as valid choice for the provided flag.
-func IsValidChoice(f Option, i interface{}) bool {
+// ValidateChoice returns an error if the provided interface value
+// does not exists as valid choice for the provided flag.
+func ValidateChoice(f Option, i interface{}) error {
 	if len(f.ValidChoices) == 0 {
-		return true
+		return nil
 	}
 
 	for _, c := range f.ValidChoices {
 		if i == c {
-			return true
+			return nil
 		}
 	}
-	return false
+	return fmt.Errorf("Value: '%v' must be one of: %v", i, f.ValidChoices)
 }
 
 // NewOption instantiates a new Option pointer, initializing it as a boolean
@@ -32,7 +32,7 @@ func NewOption(names, dest, help string) *Option {
 		DesiredAction: StoreTrue,
 		DestName:      dest,
 		HelpText:      help,
-		MetaVarText:   []string{names},
+		MetaVarText:   []string{},
 		PublicNames:   strings.Split(names, " "),
 		ValidChoices:  []interface{}{},
 	}
@@ -61,7 +61,7 @@ func (f *Option) Action(action Action) *Option {
 }
 
 // Choices appends the provided slice as acceptable arguments for the option.
-func (f *Option) Choices(choices []interface{}) *Option {
+func (f *Option) Choices(choices ...interface{}) *Option {
 	f.ValidChoices = []interface{}{}
 	for _, choice := range choices {
 		f.ValidChoices = append(f.ValidChoices, choice)
@@ -115,6 +115,19 @@ func (f *Option) DisplayName() string {
 	return strings.Join(names, ", ")
 }
 
+// GetChoices returns a string-representation of the valid chocies for the
+// current Option.
+func (f *Option) GetChoices() string {
+	if len(f.ValidChoices) == 0 {
+		return ""
+	}
+	var choices []string
+	for _, i := range f.ValidChoices {
+		choices = append(choices, fmt.Sprintf("%v", i))
+	}
+	return join("", "{", strings.Join(choices, ","), "}")
+}
+
 // GetUsage returns the usage text for the option. This includes proper formatting
 // of the option's display name & parameters. For parameters: by default, parameters
 // will be the option's public name. This can be overridden by modifying the MetaVars
@@ -137,6 +150,12 @@ func (f *Option) GetUsage() string {
 	}
 
 	var nargs []string
+	choices := f.GetChoices()
+	if len(choices) == 0 && len(f.MetaVarText) == 0 {
+		f.MetaVarText = []string{f.DestName}
+	} else if len(f.MetaVarText) == 0 {
+		f.MetaVarText = []string{choices}
+	}
 
 	if strings.ContainsAny(f.ArgNum, "?*+") == false {
 		count := 0
@@ -146,10 +165,6 @@ func (f *Option) GetUsage() string {
 		}
 
 		metaLen := len(f.MetaVarText)
-		if metaLen == 0 {
-			f.MetaVarText = []string{f.DestName}
-			metaLen = 1
-		}
 
 		for count < max {
 			meta := ""

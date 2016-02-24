@@ -5,24 +5,24 @@ import "testing"
 // TestIsValidChoice ensures that when an option has no choices, or when it
 // does and a valid choice is provided, the function returns true. Otherwise,
 // it is expected to return false.
-func TestIsValidChoice(t *testing.T) {
+func TestValidChoice(t *testing.T) {
 	expected := 3.14159
 
 	f := NewOption("a", "a", "no choices")
-	if IsValidChoice(*f, expected) != true {
-		t.Error("Was expecting a true boolean as the returned value")
+	if ValidateChoice(*f, expected) != nil {
+		t.Error("No error was expected")
 	}
 
 	f = NewOption("b", "b", "includes valid choice")
 	f.ValidChoices = []interface{}{"foobar", 42, false, 3.14159, nil}
-	if IsValidChoice(*f, expected) != true {
-		t.Error("Was expecting a true boolean as the returned value")
+	if ValidateChoice(*f, expected) != nil {
+		t.Error("No error was expected")
 	}
 
 	f = NewOption("c", "c", "does not valid choice")
 	f.ValidChoices = []interface{}{"fizzbuzz", 666, true, nil}
-	if IsValidChoice(*f, expected) != false {
-		t.Error("Was expecting a false boolean as the returned value")
+	if ValidateChoice(*f, expected) == nil {
+		t.Error("An error was expected but not provided")
 	}
 }
 
@@ -49,12 +49,6 @@ func TestNewOption(t *testing.T) {
 	if f.PublicNames[0] != name {
 		t.Error("PublicName value should match expected name")
 	}
-
-	if len(f.MetaVarText) != 1 {
-		t.Error("MetaVarText does not contain only one element")
-	} else if f.MetaVarText[0] != name {
-		t.Error("MetaVarText[0] does not match the expected name")
-	}
 }
 
 // TestOptionAction tests the Action method to ensure a option's DesiredAction
@@ -79,7 +73,7 @@ func TestOptionChoices(t *testing.T) {
 		t.Error("Option should not contain any choices yet")
 	}
 
-	f.Choices(choices)
+	f.Choices(choices...)
 	if len(f.ValidChoices) != len(choices) {
 		t.Errorf("Option contains %d choices, but is expected a total of %d", len(f.ValidChoices), len(choices))
 	}
