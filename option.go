@@ -6,6 +6,21 @@ import (
 	"strings"
 )
 
+// ValidateChoice returns an error if the provided interface value
+// does not exists as valid choice for the provided flag.
+func ValidateChoice(f Option, i interface{}) error {
+	if len(f.ValidChoices) == 0 {
+		return nil
+	}
+
+	for _, c := range f.ValidChoices {
+		if i == c {
+			return nil
+		}
+	}
+	return fmt.Errorf("Value: '%v' must be one of: %v", i, f.ValidChoices)
+}
+
 // NewOption instantiates a new Option pointer, initializing it as a boolean
 // flag. Multiple names should be delimited by a space; names should not
 // contain the prefix character.
@@ -17,25 +32,26 @@ func NewOption(names, dest, help string) *Option {
 		DesiredAction: StoreTrue,
 		DestName:      dest,
 		HelpText:      help,
-		MetaVarText:   []string{names},
+		MetaVarText:   []string{},
 		PublicNames:   strings.Split(names, " "),
+		ValidChoices:  []interface{}{},
 	}
 	return &f
 }
 
 // Option contains the necessary attributes for representing a parsable option.
 type Option struct {
-	ArgNum          string
-	ConstVal        interface{}
-	DefaultVal      interface{}
-	DesiredAction   Action
-	DestName        string
-	HelpText        string
-	IsRequired      bool
-	IsPositional    bool
-	MetaVarText     []string
-	PossibleChoices []interface{} // Currently unused. TODO: implement.
-	PublicNames     []string
+	ArgNum        string
+	ConstVal      interface{}
+	DefaultVal    interface{}
+	DesiredAction Action
+	DestName      string
+	HelpText      string
+	IsRequired    bool
+	IsPositional  bool
+	MetaVarText   []string
+	PublicNames   []string
+	ValidChoices  []interface{}
 }
 
 // Action sets the option's action to the provided action function.
@@ -45,10 +61,10 @@ func (f *Option) Action(action Action) *Option {
 }
 
 // Choices appends the provided slice as acceptable arguments for the option.
-func (f *Option) Choices(choices []interface{}) *Option {
-	f.PossibleChoices = []interface{}{}
+func (f *Option) Choices(choices ...interface{}) *Option {
+	f.ValidChoices = []interface{}{}
 	for _, choice := range choices {
-		f.PossibleChoices = append(f.PossibleChoices, choice)
+		f.ValidChoices = append(f.ValidChoices, choice)
 	}
 	return f
 }
@@ -99,6 +115,19 @@ func (f *Option) DisplayName() string {
 	return strings.Join(names, ", ")
 }
 
+// GetChoices returns a string-representation of the valid chocies for the
+// current Option.
+func (f *Option) GetChoices() string {
+	if len(f.ValidChoices) == 0 {
+		return ""
+	}
+	var choices []string
+	for _, i := range f.ValidChoices {
+		choices = append(choices, fmt.Sprintf("%v", i))
+	}
+	return join("", "{", strings.Join(choices, ","), "}")
+}
+
 // GetUsage returns the usage text for the option. This includes proper formatting
 // of the option's display name & parameters. For parameters: by default, parameters
 // will be the option's public name. This can be overridden by modifying the MetaVars
@@ -121,6 +150,12 @@ func (f *Option) GetUsage() string {
 	}
 
 	var nargs []string
+	choices := f.GetChoices()
+	if len(choices) == 0 && len(f.MetaVarText) == 0 {
+		f.MetaVarText = []string{f.DestName}
+	} else if len(f.MetaVarText) == 0 {
+		f.MetaVarText = []string{choices}
+	}
 
 	if strings.ContainsAny(f.ArgNum, "?*+") == false {
 		count := 0
@@ -130,10 +165,6 @@ func (f *Option) GetUsage() string {
 		}
 
 		metaLen := len(f.MetaVarText)
-		if metaLen == 0 {
-			f.MetaVarText = []string{f.DestName}
-			metaLen = 1
-		}
 
 		for count < max {
 			meta := ""

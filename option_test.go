@@ -2,7 +2,29 @@ package argparse
 
 import "testing"
 
-//import go package for testing related functionality
+// TestIsValidChoice ensures that when an option has no choices, or when it
+// does and a valid choice is provided, the function returns true. Otherwise,
+// it is expected to return false.
+func TestValidChoice(t *testing.T) {
+	expected := 3.14159
+
+	f := NewOption("a", "a", "no choices")
+	if ValidateChoice(*f, expected) != nil {
+		t.Error("No error was expected")
+	}
+
+	f = NewOption("b", "b", "includes valid choice")
+	f.ValidChoices = []interface{}{"foobar", 42, false, 3.14159, nil}
+	if ValidateChoice(*f, expected) != nil {
+		t.Error("No error was expected")
+	}
+
+	f = NewOption("c", "c", "does not valid choice")
+	f.ValidChoices = []interface{}{"fizzbuzz", 666, true, nil}
+	if ValidateChoice(*f, expected) == nil {
+		t.Error("An error was expected but not provided")
+	}
+}
 
 // TestNewOption tests the creation of a new option, populated with defaults
 // and appropriate name and description as provided.
@@ -27,12 +49,6 @@ func TestNewOption(t *testing.T) {
 	if f.PublicNames[0] != name {
 		t.Error("PublicName value should match expected name")
 	}
-
-	if len(f.MetaVarText) != 1 {
-		t.Error("MetaVarText does not contain only one element")
-	} else if f.MetaVarText[0] != name {
-		t.Error("MetaVarText[0] does not match the expected name")
-	}
 }
 
 // TestOptionAction tests the Action method to ensure a option's DesiredAction
@@ -53,13 +69,13 @@ func TestOptionChoices(t *testing.T) {
 	f := Option{}
 	choices := []interface{}{"foobar", true, 12}
 
-	if len(f.PossibleChoices) != 0 {
+	if len(f.ValidChoices) != 0 {
 		t.Error("Option should not contain any choices yet")
 	}
 
-	f.Choices(choices)
-	if len(f.PossibleChoices) != len(choices) {
-		t.Errorf("Option contains %d choices, but is expected a total of %d", len(f.PossibleChoices), len(choices))
+	f.Choices(choices...)
+	if len(f.ValidChoices) != len(choices) {
+		t.Errorf("Option contains %d choices, but is expected a total of %d", len(f.ValidChoices), len(choices))
 	}
 }
 
