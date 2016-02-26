@@ -1,12 +1,15 @@
 package argparse
 
-import "testing"
+import (
+	"reflect"
+	"testing"
+)
 
 // TestIsValidChoice ensures that when an option has no choices, or when it
 // does and a valid choice is provided, the function returns true. Otherwise,
 // it is expected to return false.
-func TestValidChoice(t *testing.T) {
-	expected := 3.14159
+func TestValidateChoice(t *testing.T) {
+	expected := "3.14159"
 
 	f := NewOption("a", "a", "no choices")
 	if ValidateChoice(*f, expected) != nil {
@@ -14,15 +17,41 @@ func TestValidChoice(t *testing.T) {
 	}
 
 	f = NewOption("b", "b", "includes valid choice")
-	f.ValidChoices = []interface{}{"foobar", 42, false, 3.14159, nil}
+	f.ValidChoices = []string{"foobar", "42", "false", "3.14159", "nil"}
 	if ValidateChoice(*f, expected) != nil {
 		t.Error("No error was expected")
 	}
 
 	f = NewOption("c", "c", "does not valid choice")
-	f.ValidChoices = []interface{}{"fizzbuzz", 666, true, nil}
+	f.ValidChoices = []string{"fizzbuzz", "666", "true", "nil"}
 	if ValidateChoice(*f, expected) == nil {
 		t.Error("An error was expected but not provided")
+	}
+}
+
+// TestValidateType will test the ValidateType function to ensure it will raise
+// errors when an incorrect type is provided, and nil in all other cases.
+func TestValidateType(t *testing.T) {
+	f := NewOption("name", "dest", "help")
+
+	f.Type(reflect.Invalid)
+	if err := ValidateType(*f, "acceptable"); err != nil {
+		t.Error("An error was returned but not expected")
+	}
+
+	f.Type(reflect.Int)
+	if err := ValidateType(*f, "42"); err != nil {
+		t.Error("An error was returned but not expected")
+	}
+
+	f.Type(reflect.Bool)
+	if err := ValidateType(*f, "True"); err != nil {
+		t.Error("An error was returned but not expected")
+	}
+
+	f.Type(reflect.Float32)
+	if err := ValidateType(*f, "this is invalid"); err == nil {
+		t.Error("An error was expected but not returned")
 	}
 }
 
@@ -67,7 +96,7 @@ func TestOptionAction(t *testing.T) {
 // to the provided []interface{}.
 func TestOptionChoices(t *testing.T) {
 	f := Option{}
-	choices := []interface{}{"foobar", true, 12}
+	choices := []string{"foobar", "true", "12"}
 
 	if len(f.ValidChoices) != 0 {
 		t.Error("Option should not contain any choices yet")
