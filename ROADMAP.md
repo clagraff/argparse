@@ -81,3 +81,4 @@ argparse packaged are included.
     - [ ] Unit tests
         - [ ] Unit testing using Testify package
     - [ ] Strong code coverage
+    - [ ] Comprehensive & cohesive error messages
