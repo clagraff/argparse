@@ -5,12 +5,23 @@ import (
 	"strings"
 )
 
-func InvalidChoiceErr(opt Option, arg string) error {
-	msg := "%s: invalid choice \"%s\" (choose from: %s)"
-	return fmt.Errorf(msg, opt.DisplayName(), arg, strings.Join(opt.ValidChoices, ", "))
+type InvalidChoiceErr struct {
+	opt Option
+	arg string
 }
 
-func InvalidTypeErr(opt Option, arg string) error {
-	msg := "%s: invalid type \"%s\" (must be: %s)"
-	return fmt.Errorf(msg, opt.DisplayName(), arg, opt.ExpectedType.String())
+func (err InvalidChoiceErr) Error() string {
+	msg := "%s: invalid choice \"%s\" (choose from: %s)"
+	return fmt.Sprintf(msg, err.opt.DisplayName(), err.arg, strings.Join(err.opt.ValidChoices, ", "))
+
+}
+
+type InvalidTypeErr struct {
+	opt Option
+	arg string
+}
+
+func (err InvalidTypeErr) Error() string {
+	msg := "%s: invalid %s value: \"%s\""
+	return fmt.Sprintf(msg, err.opt.DisplayName(), err.opt.ExpectedType.String(), err.arg)
 }

@@ -20,7 +20,7 @@ func ValidateChoice(f Option, arg string) error {
 		}
 	}
 
-	return InvalidChoiceErr(f, arg)
+	return InvalidChoiceErr{f, arg}
 }
 
 // ValidateType attempt to type-convert the string argument to the flag's desired
@@ -51,7 +51,7 @@ func ValidateType(f Option, arg string) error {
 			return nil
 		}
 	}
-	return InvalidTypeErr(f, arg)
+	return InvalidTypeErr{f, arg}
 }
 
 // NewOption instantiates a new Option pointer, initializing it as a boolean
