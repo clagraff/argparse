@@ -9,48 +9,49 @@ import (
 
 // ValidateChoice returns an error if the provided interface value
 // does not exists as valid choice for the provided flag.
-func ValidateChoice(f Option, i interface{}) error {
+func ValidateChoice(f Option, arg string) error {
 	if len(f.ValidChoices) == 0 {
 		return nil
 	}
 
 	for _, c := range f.ValidChoices {
-		if i == c {
+		if arg == c {
 			return nil
 		}
 	}
-	return fmt.Errorf("Value: '%v' must be one of: %v", i, f.ValidChoices)
+
+	return InvalidChoiceErr(f, arg)
 }
 
-// AssertType attempt to type-convert the string argument to the flag's desired
+// ValidateType attempt to type-convert the string argument to the flag's desired
 // type. It will return an error if the provided interface value does not
 // satisfy the Option's expected Reflect.Kind type.
-func AssertType(f Option, arg string) (interface{}, error) {
+func ValidateType(f Option, arg string) error {
 	switch f.ExpectedType {
 	case reflect.Invalid, reflect.String:
-		return arg, nil
+		return nil
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		if v, err := strconv.Atoi(arg); err == nil {
-			return v, nil
+		if _, err := strconv.Atoi(arg); err == nil {
+			return nil
 		}
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-		if v, err := strconv.ParseUint(arg, 10, 0); err == nil {
-			return v, nil
+		if _, err := strconv.ParseUint(arg, 10, 0); err == nil {
+			return nil
 		}
 	case reflect.Float32:
-		if v, err := strconv.ParseFloat(arg, 32); err == nil {
-			return v, nil
+		if _, err := strconv.ParseFloat(arg, 32); err == nil {
+			return nil
 		}
 	case reflect.Float64:
-		if v, err := strconv.ParseFloat(arg, 64); err == nil {
-			return v, nil
+		if _, err := strconv.ParseFloat(arg, 64); err == nil {
+			return nil
 		}
 	case reflect.Bool:
-		if v, err := strconv.ParseBool(arg); err == nil {
-			return v, nil
+		if _, err := strconv.ParseBool(arg); err == nil {
+			return nil
 		}
 	}
-	return nil, fmt.Errorf("Value: '%v' must be of type: %s", arg, f.ExpectedType.String())
+	return InvalidTypeErr(f, arg)
 }
 
 // NewOption instantiates a new Option pointer, initializing it as a boolean
@@ -66,7 +67,7 @@ func NewOption(names, dest, help string) *Option {
 		HelpText:      help,
 		MetaVarText:   []string{},
 		PublicNames:   strings.Split(names, " "),
-		ValidChoices:  []interface{}{},
+		ValidChoices:  []string{},
 	}
 	return &f
 }
@@ -84,7 +85,7 @@ type Option struct {
 	IsPositional  bool
 	MetaVarText   []string
 	PublicNames   []string
-	ValidChoices  []interface{}
+	ValidChoices  []string
 }
 
 // Action sets the option's action to the provided action function.
@@ -94,8 +95,8 @@ func (f *Option) Action(action Action) *Option {
 }
 
 // Choices appends the provided slice as acceptable arguments for the option.
-func (f *Option) Choices(choices ...interface{}) *Option {
-	f.ValidChoices = []interface{}{}
+func (f *Option) Choices(choices ...string) *Option {
+	f.ValidChoices = []string{}
 	for _, choice := range choices {
 		f.ValidChoices = append(f.ValidChoices, choice)
 	}

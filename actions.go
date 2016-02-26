@@ -22,6 +22,8 @@ func Store(p *Parser, f *Option, args ...string) ([]string, error) {
 		if len(args) > 0 {
 			if err := ValidateChoice(*f, args[0]); err != nil {
 				return args, err
+			} else if err := ValidateType(*f, args[0]); err != nil {
+				return args, err
 			}
 			p.Values[f.DestName] = args[0]
 			return args[1:], nil
@@ -34,6 +36,8 @@ func Store(p *Parser, f *Option, args ...string) ([]string, error) {
 		var values []interface{}
 		for len(args) > 0 {
 			if err := ValidateChoice(*f, args[0]); err != nil {
+				return args, err
+			} else if err := ValidateType(*f, args[0]); err != nil {
 				return args, err
 			}
 			values = append(values, args[0])
@@ -49,9 +53,11 @@ func Store(p *Parser, f *Option, args ...string) ([]string, error) {
 		}
 
 		if num > 1 {
-			var values []interface{}
+			var values []string
 			for _, v := range args[0:num] {
 				if err := ValidateChoice(*f, v); err != nil {
+					return args, err
+				} else if err := ValidateType(*f, v); err != nil {
 					return args, err
 				}
 				values = append(values, v)
@@ -63,6 +69,11 @@ func Store(p *Parser, f *Option, args ...string) ([]string, error) {
 				args = args[num:]
 			}
 		} else {
+			if err := ValidateChoice(*f, args[0]); err != nil {
+				return args, err
+			} else if err := ValidateType(*f, args[0]); err != nil {
+				return args, err
+			}
 			p.Values[f.DestName] = args[0]
 			if len(args) > 1 {
 				args = args[1:]
@@ -127,6 +138,8 @@ func Append(p *Parser, f *Option, args ...string) ([]string, error) {
 		for count < num {
 			if err := ValidateChoice(*f, args[0]); err != nil {
 				return args, err
+			} else if err := ValidateType(*f, args[0]); err != nil {
+				return args, err
 			}
 			appendValue(p, f, args[0])
 			args = args[1:]
@@ -139,6 +152,8 @@ func Append(p *Parser, f *Option, args ...string) ([]string, error) {
 	} else if f.ArgNum == "?" {
 		if len(args) > 0 {
 			if err := ValidateChoice(*f, args[0]); err != nil {
+				return args, err
+			} else if err := ValidateType(*f, args[0]); err != nil {
 				return args, err
 			}
 			appendValue(p, f, args[0])
@@ -153,6 +168,8 @@ func Append(p *Parser, f *Option, args ...string) ([]string, error) {
 
 		for len(args) > 0 {
 			if err := ValidateChoice(*f, args[0]); err != nil {
+				return args, err
+			} else if err := ValidateType(*f, args[0]); err != nil {
 				return args, err
 			}
 			appendValue(p, f, args[0])

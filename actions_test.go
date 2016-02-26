@@ -49,7 +49,7 @@ func TestStore_ThreeNargs(t *testing.T) {
 		t.Error("An error was not expected")
 	}
 
-	if len(p.Values[f.DestName].([]interface{})) != 3 {
+	if len(p.Values[f.DestName].([]string)) != 3 {
 		t.Error("Action did not store correct number of values in parser")
 	}
 

@@ -62,6 +62,7 @@ argparse packaged are included.
     - [ ] Support limiting to available argument Choices
     - [ ] Derive Dest attribute from public name
     - [ ] Allow for mutually-exclusive arguments
+    - [ ] Provide validity checking for Option based on provided arguments
 - [ ] Namespace
     - [ ] Contain parsed values for arguments
     - [ ] Provide statically-typed value-returning methods
@@ -75,7 +76,7 @@ argparse packaged are included.
     - [ ] count
     - [x] help
     - [ ] version
-- [ ] Project milestones
+- [ ] Project / General milestones
     - [ ] Documentation / examples
     - [ ] Unit tests
         - [ ] Unit testing using Testify package
