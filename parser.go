@@ -16,6 +16,7 @@ type Parser struct {
 	Options     []*Option
 	UsageText   string
 	Values      map[string]interface{}
+	VersionDesc string
 }
 
 // AddHelp adds a new option to output usage information for the current parser
@@ -37,7 +38,7 @@ func (p *Parser) AddOption(f *Option) *Parser {
 // name, or will otherwise return an error.
 func (p *Parser) GetOption(name string) (*Option, error) {
 	if len(name) <= 0 {
-		return nil, fmt.Errorf("Invalid option PublicName")
+		return nil, InvalidFlagNameErr{name}
 	}
 	for _, option := range p.Options {
 		if option.IsPublicName(name) == true {
@@ -45,7 +46,7 @@ func (p *Parser) GetOption(name string) (*Option, error) {
 		}
 	}
 
-	return nil, fmt.Errorf("No argument named: '%s'", name)
+	return nil, InvalidFlagNameErr{name}
 }
 
 // GetHelp returns a string containing the parser's description text,
@@ -178,6 +179,10 @@ func (p *Parser) GetHelp() string {
 	return join("", usage...)
 }
 
+func (p *Parser) GetVersion() string {
+	return p.VersionDesc
+}
+
 // Parser accepts a slice of strings as options and arguments to be parsed. The
 // parser will call each encountered option's action. Unexpected options will
 // cause an error. All errors are returned.
@@ -211,7 +216,7 @@ func (p *Parser) Parse(allArgs ...string) error {
 		}
 
 		if option == nil {
-			return fmt.Errorf("option '%s' is not a valid option", optionName)
+			return InvalidOptionErr{optionName}
 		}
 
 		args, err = option.DesiredAction(p, option, args...)
@@ -235,7 +240,7 @@ func (p *Parser) Parse(allArgs ...string) error {
 
 	if len(requiredOptions) != 0 {
 		for _, option := range requiredOptions {
-			return fmt.Errorf("option '%s' is required but was not present", option.DisplayName())
+			return MissingOptionErr{option.DisplayName()}
 		}
 	}
 	return nil
@@ -263,6 +268,13 @@ func (p *Parser) Usage(usage string) *Parser {
 // ShowHelp outputs to stdout the parser's generated help text.
 func (p *Parser) ShowHelp() *Parser {
 	fmt.Println(p.GetHelp())
+
+	return p
+}
+
+// ShowVersion outputs to stdout the parser's generated versioning text.
+func (p *Parser) ShowVersion() *Parser {
+	fmt.Println(p.GetVersion())
 
 	return p
 }
