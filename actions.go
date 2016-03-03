@@ -49,7 +49,7 @@ func Store(p *Parser, f *Option, args ...string) ([]string, error) {
 	} else if regexp.MustCompile(`^[1-9]+$`).MatchString(f.ArgNum) == true {
 		num, _ := strconv.Atoi(f.ArgNum)
 		if len(args) < num {
-			return args, TooFewArgs{*f}
+			return args, TooFewArgsErr{*f}
 		}
 
 		if num > 1 {

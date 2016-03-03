@@ -88,5 +88,5 @@ type MissingOptionErr struct {
 // Error will return a string error message for the MissingOptionErr
 func (err MissingOptionErr) Error() string {
 	msg := "option \"%s\" required"
-	return fmt.Sprintf(msg, err.opt.DisplayName())
+	return fmt.Sprintf(msg, err.name)
 }
