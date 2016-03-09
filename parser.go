@@ -179,6 +179,7 @@ func (p *Parser) GetHelp() string {
 	return join("", usage...)
 }
 
+// GetVersion will return the version text for the current parser.
 func (p *Parser) GetVersion() string {
 	return p.VersionDesc
 }
@@ -276,6 +277,12 @@ func (p *Parser) ShowHelp() *Parser {
 func (p *Parser) ShowVersion() *Parser {
 	fmt.Println(p.GetVersion())
 
+	return p
+}
+
+// Version sets the provide string as the version text for the parser.
+func (p *Parser) Version(version string) *Parser {
+	p.VersionDesc = version
 	return p
 }
 
