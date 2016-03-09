@@ -106,6 +106,16 @@ func TestParserGetHelp(t *testing.T) {
 	// TODO: implement a better test for the Parser.GetHelp() method.
 }
 
+// TestParserGetVersion tests the GetVersion  method to ensure that the parser will
+// return a version-string containing version information of the parser.
+func TestParserGetVersion(t *testing.T) {
+	p := NewParser("some description").Version("1.0.b")
+
+	if p.GetVersion() != "1.0.b" {
+		t.Errorf("The retrieved version text did not match the expected string")
+	}
+}
+
 // TestParserParse tests the Parse method to ensure that arguments provided to
 // the parser are properly parsed and the necessary actions for all options are
 // executed.
@@ -175,7 +185,7 @@ func TestParserUsage(t *testing.T) {
 }
 
 // TestParserShowHelp tests the ShowHelp method to ensure the parser will print
-// the tet returned by GetHelp to stdout.
+// the text returned by GetHelp to stdout.
 func TestParserShowHelp(t *testing.T) {
 	oldStdout := os.Stdout
 	_, writeFile, err := os.Pipe()
@@ -198,6 +208,33 @@ func TestParserShowHelp(t *testing.T) {
 
 	if len(lines) < 0 {
 		t.Error("Expected help text but none was received")
+	}
+}
+
+// TestParserShowVersion tests the ShowVersion method to ensure the parser will print
+// the text returned by GetVersion to stdout.
+func TestParserShowVersion(t *testing.T) {
+	oldStdout := os.Stdout
+	_, writeFile, err := os.Pipe()
+	if err != nil {
+		t.Error(err.Error())
+	}
+	os.Stdout = writeFile
+
+	p := NewParser("this is a program").Version("1.foo.bar.0.42 alpha")
+	p.ShowVersion()
+
+	writeFile.Close()
+	os.Stdout = oldStdout
+
+	var lines []string
+	scanner := bufio.NewScanner(writeFile)
+	for scanner.Scan() {
+		lines = append(lines, scanner.Text())
+	}
+
+	if len(lines) < 0 {
+		t.Error("Expected version text but none was received")
 	}
 }
 

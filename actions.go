@@ -30,7 +30,7 @@ func Store(p *Parser, f *Option, args ...string) ([]string, error) {
 		}
 	} else if strings.ContainsAny(f.ArgNum, "*+") == true {
 		if f.ArgNum == "+" && len(args) == 0 {
-			return args, fmt.Errorf("option '%s' expects at least one argument", f.DisplayName())
+			return args, TooFewArgsErr{*f}
 		}
 
 		var values []interface{}
@@ -49,7 +49,7 @@ func Store(p *Parser, f *Option, args ...string) ([]string, error) {
 	} else if regexp.MustCompile(`^[1-9]+$`).MatchString(f.ArgNum) == true {
 		num, _ := strconv.Atoi(f.ArgNum)
 		if len(args) < num {
-			return args, fmt.Errorf("option '%s' is expecting %d argument(s) but was provided %d", f.DisplayName(), num, len(args))
+			return args, TooFewArgsErr{*f}
 		}
 
 		if num > 1 {
@@ -131,7 +131,7 @@ func Append(p *Parser, f *Option, args ...string) ([]string, error) {
 	if regexp.MustCompile(`^[1-9]+$`).MatchString(f.ArgNum) == true {
 		num, _ := strconv.Atoi(f.ArgNum)
 		if len(args) < num {
-			return args, fmt.Errorf("option '%s' is expecting %d argument(s) but was provided %d", f.DisplayName(), num, len(args))
+			return args, TooFewArgsErr{*f}
 		}
 
 		count := 0
@@ -163,7 +163,7 @@ func Append(p *Parser, f *Option, args ...string) ([]string, error) {
 		}
 	} else {
 		if f.ArgNum == "+" && len(args) == 0 {
-			return args, fmt.Errorf("option '%s' expects at least one argument", f.DisplayName())
+			return args, MissingOneOrMoreArgsErr{*f}
 		}
 
 		for len(args) > 0 {
@@ -200,5 +200,12 @@ func AppendConst(p *Parser, f *Option, args ...string) ([]string, error) {
 // and help information for each option to stdout. Provided arguments remain unchanged.
 func ShowHelp(p *Parser, f *Option, args ...string) ([]string, error) {
 	p.ShowHelp()
+	return args, nil
+}
+
+// ShowVersion calls the parser's ShowVersion function to output parser/program
+// version information. Provided arguments remain unchanged.
+func ShowVersion(p *Parser, f *Option, args ...string) ([]string, error) {
+	p.ShowVersion()
 	return args, nil
 }
