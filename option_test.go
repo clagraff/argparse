@@ -63,12 +63,12 @@ func TestNewOption(t *testing.T) {
 	desc := "my option"
 	f := NewOption(name, dest, desc)
 
-	if f.DefaultVal != nil {
-		t.Error("Default value should be nil")
+	if f.DefaultVal != "" {
+		t.Error("Default value should be empty")
 	}
 
-	if f.ConstVal != nil {
-		t.Error("Constant value should be nil")
+	if f.ConstVal != "" {
+		t.Error("Constant value should be empty")
 	}
 
 	if f.DestName != dest {
@@ -113,8 +113,8 @@ func TestOptionChoices(t *testing.T) {
 func TestOptionConst(t *testing.T) {
 	f := Option{}
 
-	if f.ConstVal != nil {
-		t.Error("Option ConstVal should be nil upon initialization")
+	if f.ConstVal != "" {
+		t.Error("Option ConstVal should be empty upon initialization")
 	}
 
 	expected := "some value"
@@ -130,8 +130,8 @@ func TestOptionConst(t *testing.T) {
 func TestOptionDefault(t *testing.T) {
 	f := Option{}
 
-	if f.DefaultVal != nil {
-		t.Error("Option DefaultVal should be nil upon initialization")
+	if f.DefaultVal != "" {
+		t.Error("Option DefaultVal should be empty upon initialization")
 	}
 
 	expected := "some value"

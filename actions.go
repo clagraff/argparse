@@ -122,13 +122,13 @@ func StoreTrue(p *Parser, f *Option, args ...string) ([]string, error) {
 func Append(p *Parser, f *Option, args ...string) ([]string, error) {
 	appendValue := func(p *Parser, f *Option, value interface{}) error {
 		if p.Namespace.KeyExists(f.DestName) == false {
-			p.Namespace.Set(f.DestName, make([]interface{}, 0))
+			p.Namespace.Set(f.DestName, make([]string, 0))
 		}
 		slice, err := p.Namespace.Get(f.DestName)
 		if err != nil {
 			return err
 		}
-		slice = append(slice.([]interface{}), value)
+		slice = append(slice.([]string), value.(string))
 		p.Namespace.Set(f.DestName, slice)
 		return nil
 	}
@@ -195,13 +195,13 @@ func AppendConst(p *Parser, f *Option, args ...string) ([]string, error) {
 	}
 
 	if p.Namespace.KeyExists(f.DestName) == false {
-		p.Namespace.Set(f.DestName, make([]interface{}, 0))
+		p.Namespace.Set(f.DestName, make([]string, 0))
 	}
 	slice, err := p.Namespace.Get(f.DestName)
 	if err != nil {
 		return nil, err
 	}
-	slice = append(slice.([]interface{}), f.ConstVal)
+	slice = append(slice.([]string), f.ConstVal)
 	p.Namespace.Set(f.DestName, slice)
 	return args, nil
 }

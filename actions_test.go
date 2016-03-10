@@ -199,7 +199,7 @@ func TestAppend_OneNargs(t *testing.T) {
 		t.Error("An error was not expected")
 	}
 
-	if len(p.Namespace.Mapping[f.DestName].([]interface{})) != 1 {
+	if len(p.Namespace.Mapping[f.DestName].([]string)) != 1 {
 		t.Error("Action did not store correct value in parser")
 	}
 
@@ -228,7 +228,7 @@ func TestAppend_ThreeNargs(t *testing.T) {
 		t.Error("An error was not expected")
 	}
 
-	if len(p.Namespace.Mapping[f.DestName].([]interface{})) != 3 {
+	if len(p.Namespace.Mapping[f.DestName].([]string)) != 3 {
 		t.Error("Action did not store correct number of values in parser")
 	}
 
@@ -257,7 +257,7 @@ func TestAppend_AnyNargs(t *testing.T) {
 		t.Error("An error was not expected")
 	}
 
-	if len(p.Namespace.Mapping[f.DestName].([]interface{})) != 6 {
+	if len(p.Namespace.Mapping[f.DestName].([]string)) != 6 {
 		t.Error("Action did not store correct number of values in parser")
 	}
 
@@ -286,7 +286,7 @@ func TestAppend_LeastOneNargs(t *testing.T) {
 		t.Error("An error was not expected")
 	}
 
-	if len(p.Namespace.Mapping[f.DestName].([]interface{})) != 3 {
+	if len(p.Namespace.Mapping[f.DestName].([]string)) != 3 {
 		t.Error("Action did not store correct number of values in parser")
 	}
 

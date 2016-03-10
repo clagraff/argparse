@@ -60,8 +60,8 @@ func ValidateType(f Option, arg string) error {
 func NewOption(names, dest, help string) *Option {
 	f := Option{
 		ArgNum:        "0",
-		ConstVal:      nil,
-		DefaultVal:    nil,
+		ConstVal:      "",
+		DefaultVal:    "",
 		DesiredAction: StoreTrue,
 		DestName:      dest,
 		HelpText:      help,
@@ -75,8 +75,8 @@ func NewOption(names, dest, help string) *Option {
 // Option contains the necessary attributes for representing a parsable option.
 type Option struct {
 	ArgNum        string
-	ConstVal      interface{}
-	DefaultVal    interface{}
+	ConstVal      string
+	DefaultVal    string
 	DesiredAction Action
 	DestName      string
 	ExpectedType  reflect.Kind
@@ -105,14 +105,14 @@ func (f *Option) Choices(choices ...string) *Option {
 
 // Const sets the option's constant value to the provided interface. A option's constant value
 // is only used for certain actions. By default, the constant value is `nil`.
-func (f *Option) Const(value interface{}) *Option {
+func (f *Option) Const(value string) *Option {
 	f.ConstVal = value
 	return f
 }
 
 // Default sets the option's default value. A option's default value is only used for
 // certain actions. By default, the default value is `nil`.
-func (f *Option) Default(value interface{}) *Option {
+func (f *Option) Default(value string) *Option {
 	f.DefaultVal = value
 	return f
 }
