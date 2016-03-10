@@ -15,8 +15,8 @@ type Parser struct {
 	AllowAbbrev bool
 	Options     []*Option
 	UsageText   string
-	Values      map[string]interface{}
 	VersionDesc string
+	Namespace   *Namespace
 }
 
 // AddHelp adds a new option to output usage information for the current parser
@@ -187,8 +187,11 @@ func (p *Parser) GetVersion() string {
 // Parser accepts a slice of strings as options and arguments to be parsed. The
 // parser will call each encountered option's action. Unexpected options will
 // cause an error. All errors are returned.
-func (p *Parser) Parse(allArgs ...string) error {
-	p.Values = make(map[string]interface{})
+func (p *Parser) Parse(allArgs ...string) (*Namespace, error) {
+	if p.Namespace == nil {
+		p.Namespace = NewNamespace()
+	}
+
 	requiredOptions := make(map[string]*Option)
 	var err error
 
@@ -196,7 +199,7 @@ func (p *Parser) Parse(allArgs ...string) error {
 		if option.IsRequired == true {
 			requiredOptions[option.DisplayName()] = option
 		}
-		p.Values[option.DestName] = option.DefaultVal
+		p.Namespace.Set(option.DestName, option.DefaultVal)
 	}
 
 	optionNames, args := extractOptions(allArgs...)
@@ -217,12 +220,12 @@ func (p *Parser) Parse(allArgs ...string) error {
 		}
 
 		if option == nil {
-			return InvalidOptionErr{optionName}
+			return nil, InvalidOptionErr{optionName}
 		}
 
 		args, err = option.DesiredAction(p, option, args...)
 		if err != nil {
-			return err
+			return nil, err
 		}
 	}
 
@@ -235,16 +238,16 @@ func (p *Parser) Parse(allArgs ...string) error {
 		}
 		args, err = f.DesiredAction(p, f, args...)
 		if err != nil {
-			return err
+			return nil, err
 		}
 	}
 
 	if len(requiredOptions) != 0 {
 		for _, option := range requiredOptions {
-			return MissingOptionErr{option.DisplayName()}
+			return nil, MissingOptionErr{option.DisplayName()}
 		}
 	}
-	return nil
+	return p.Namespace, nil
 }
 
 // Path will set the parser's program name to the program name specified by the
@@ -290,7 +293,8 @@ func (p *Parser) Version(version string) *Parser {
 // a description matching the provided string.
 func NewParser(desc string) *Parser {
 	p := Parser{UsageText: desc}
-	p.Values = make(map[string]interface{})
+	p.Namespace = NewNamespace()
+
 	if len(os.Args) >= 1 {
 		p.Path(os.Args[0])
 	}

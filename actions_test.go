@@ -20,7 +20,7 @@ func TestStore_OneNargs(t *testing.T) {
 		t.Error("An error was not expected")
 	}
 
-	if p.Values[f.DestName] != "foobar" {
+	if p.Namespace.Mapping[f.DestName] != "foobar" {
 		t.Error("Action did not store correct value in parser")
 	}
 
@@ -49,7 +49,7 @@ func TestStore_ThreeNargs(t *testing.T) {
 		t.Error("An error was not expected")
 	}
 
-	if len(p.Values[f.DestName].([]string)) != 3 {
+	if len(p.Namespace.Mapping[f.DestName].([]string)) != 3 {
 		t.Error("Action did not store correct number of values in parser")
 	}
 
@@ -78,7 +78,7 @@ func TestStore_AnyNargs(t *testing.T) {
 		t.Error("An error was not expected")
 	}
 
-	if len(p.Values[f.DestName].([]interface{})) != 6 {
+	if len(p.Namespace.Mapping[f.DestName].([]interface{})) != 6 {
 		t.Error("Action did not store correct number of values in parser")
 	}
 
@@ -107,7 +107,7 @@ func TestStore_LeastOneNargs(t *testing.T) {
 		t.Error("An error was not expected")
 	}
 
-	if len(p.Values[f.DestName].([]interface{})) != 3 {
+	if len(p.Namespace.Mapping[f.DestName].([]interface{})) != 3 {
 		t.Error("Action did not store correct number of values in parser")
 	}
 
@@ -134,7 +134,7 @@ func TestStoreConst(t *testing.T) {
 		t.Error("An error was not expected")
 	}
 
-	if p.Values[f.DestName] != f.ConstVal {
+	if p.Namespace.Mapping[f.DestName] != f.ConstVal {
 		t.Error("Action did not store the correct ConstValue in the parser")
 	}
 }
@@ -155,7 +155,7 @@ func TestStoreFalse(t *testing.T) {
 		t.Error("An error was not expected")
 	}
 
-	if p.Values[f.DestName] != false {
+	if p.Namespace.Mapping[f.DestName] != false {
 		t.Error("Action did not store the correct boolean value in the parser")
 	}
 }
@@ -176,7 +176,7 @@ func TestStoreTrue(t *testing.T) {
 		t.Error("An error was not expected")
 	}
 
-	if p.Values[f.DestName] != true {
+	if p.Namespace.Mapping[f.DestName] != true {
 		t.Error("Action did not store the correct boolean value in the parser")
 	}
 }
@@ -199,7 +199,7 @@ func TestAppend_OneNargs(t *testing.T) {
 		t.Error("An error was not expected")
 	}
 
-	if len(p.Values[f.DestName].([]interface{})) != 1 {
+	if len(p.Namespace.Mapping[f.DestName].([]string)) != 1 {
 		t.Error("Action did not store correct value in parser")
 	}
 
@@ -228,7 +228,7 @@ func TestAppend_ThreeNargs(t *testing.T) {
 		t.Error("An error was not expected")
 	}
 
-	if len(p.Values[f.DestName].([]interface{})) != 3 {
+	if len(p.Namespace.Mapping[f.DestName].([]string)) != 3 {
 		t.Error("Action did not store correct number of values in parser")
 	}
 
@@ -257,7 +257,7 @@ func TestAppend_AnyNargs(t *testing.T) {
 		t.Error("An error was not expected")
 	}
 
-	if len(p.Values[f.DestName].([]interface{})) != 6 {
+	if len(p.Namespace.Mapping[f.DestName].([]string)) != 6 {
 		t.Error("Action did not store correct number of values in parser")
 	}
 
@@ -286,7 +286,7 @@ func TestAppend_LeastOneNargs(t *testing.T) {
 		t.Error("An error was not expected")
 	}
 
-	if len(p.Values[f.DestName].([]interface{})) != 3 {
+	if len(p.Namespace.Mapping[f.DestName].([]string)) != 3 {
 		t.Error("Action did not store correct number of values in parser")
 	}
 

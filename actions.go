@@ -2,7 +2,6 @@ package argparse
 
 import (
 	"fmt"
-	"reflect"
 	"regexp"
 	"strconv"
 	"strings"
@@ -25,7 +24,7 @@ func Store(p *Parser, f *Option, args ...string) ([]string, error) {
 			} else if err := ValidateType(*f, args[0]); err != nil {
 				return args, err
 			}
-			p.Values[f.DestName] = args[0]
+			p.Namespace.Set(f.DestName, args[0])
 			return args[1:], nil
 		}
 	} else if strings.ContainsAny(f.ArgNum, "*+") == true {
@@ -44,7 +43,7 @@ func Store(p *Parser, f *Option, args ...string) ([]string, error) {
 			args = args[1:]
 		}
 
-		p.Values[f.DestName] = values
+		p.Namespace.Set(f.DestName, values)
 		return args, nil
 	} else if regexp.MustCompile(`^[1-9]+$`).MatchString(f.ArgNum) == true {
 		num, _ := strconv.Atoi(f.ArgNum)
@@ -62,7 +61,7 @@ func Store(p *Parser, f *Option, args ...string) ([]string, error) {
 				}
 				values = append(values, v)
 			}
-			p.Values[f.DestName] = values
+			p.Namespace.Set(f.DestName, values)
 			if num > len(args) {
 				args = []string{}
 			} else {
@@ -74,7 +73,7 @@ func Store(p *Parser, f *Option, args ...string) ([]string, error) {
 			} else if err := ValidateType(*f, args[0]); err != nil {
 				return args, err
 			}
-			p.Values[f.DestName] = args[0]
+			p.Namespace.Set(f.DestName, args[0])
 			if len(args) > 1 {
 				args = args[1:]
 			} else {
@@ -92,7 +91,7 @@ func StoreConst(p *Parser, f *Option, args ...string) ([]string, error) {
 	if f.ArgNum != "0" {
 		panic(fmt.Sprintf("option '%s' cannot expect any arguments.", f.DisplayName()))
 	}
-	p.Values[f.DestName] = f.ConstVal
+	p.Namespace.Set(f.DestName, f.ConstVal)
 
 	return args, nil
 }
@@ -103,7 +102,7 @@ func StoreFalse(p *Parser, f *Option, args ...string) ([]string, error) {
 	if f.ArgNum != "0" {
 		panic(fmt.Sprintf("option '%s' cannot expect any arguments.", f.DisplayName()))
 	}
-	p.Values[f.DestName] = false
+	p.Namespace.Set(f.DestName, false)
 
 	return args, nil
 }
@@ -113,7 +112,7 @@ func StoreTrue(p *Parser, f *Option, args ...string) ([]string, error) {
 	if f.ArgNum != "0" {
 		panic(fmt.Sprintf("option '%s' cannot expect any arguments.", f.DisplayName()))
 	}
-	p.Values[f.DestName] = true
+	p.Namespace.Set(f.DestName, true)
 
 	return args, nil
 }
@@ -121,11 +120,17 @@ func StoreTrue(p *Parser, f *Option, args ...string) ([]string, error) {
 // Append retrives the appropriate number of argumnents for the current option, (if any),
 // and appends them individually into the parser. Remaining arguments and errors are returned.
 func Append(p *Parser, f *Option, args ...string) ([]string, error) {
-	appendValue := func(p *Parser, f *Option, value interface{}) {
-		if p.Values[f.DestName] == nil || reflect.ValueOf(p.Values[f.DestName]).Kind() != reflect.Slice {
-			p.Values[f.DestName] = make([]interface{}, 0)
+	appendValue := func(p *Parser, f *Option, value interface{}) error {
+		if p.Namespace.KeyExists(f.DestName) == false {
+			p.Namespace.Set(f.DestName, make([]string, 0))
 		}
-		p.Values[f.DestName] = append(p.Values[f.DestName].([]interface{}), value)
+		slice, err := p.Namespace.Get(f.DestName)
+		if err != nil {
+			return err
+		}
+		slice = append(slice.([]string), value.(string))
+		p.Namespace.Set(f.DestName, slice)
+		return nil
 	}
 
 	if regexp.MustCompile(`^[1-9]+$`).MatchString(f.ArgNum) == true {
@@ -189,10 +194,15 @@ func AppendConst(p *Parser, f *Option, args ...string) ([]string, error) {
 		panic(fmt.Sprintf("option '%s' cannot expect any arguments.", f.DisplayName()))
 	}
 
-	if p.Values[f.DestName] == nil || reflect.ValueOf(p.Values[f.DestName]).Kind() != reflect.Slice {
-		p.Values[f.DestName] = make([]interface{}, 0)
+	if p.Namespace.KeyExists(f.DestName) == false {
+		p.Namespace.Set(f.DestName, make([]string, 0))
 	}
-	p.Values[f.DestName] = append(p.Values[f.DestName].([]interface{}), f.ConstVal)
+	slice, err := p.Namespace.Get(f.DestName)
+	if err != nil {
+		return nil, err
+	}
+	slice = append(slice.([]string), f.ConstVal)
+	p.Namespace.Set(f.DestName, slice)
 	return args, nil
 }
 
