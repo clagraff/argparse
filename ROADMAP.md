@@ -44,8 +44,8 @@ argparse packaged are included.
         - [x] nargs
         - [x] const
         - [x] default
-        - [ ] type
-        - [ ] choices
+        - [x] type
+        - [x] choices
         - [x] required
         - [x] help
         - [x] metavar
@@ -58,14 +58,13 @@ argparse packaged are included.
         - [x] "*" - Any arguments or none
         - [x] "+" - One or more arguments
         - [ ] "rR" - Remaining arguments
-    - [ ] Support argument type-asserting
-    - [ ] Support limiting to available argument Choices
+    - [x] Support argument type-asserting
+    - [x] Support limiting to available argument Choices
     - [ ] Derive Dest attribute from public name
     - [ ] Allow for mutually-exclusive arguments
     - [ ] Provide validity checking for Option based on provided arguments
-- [ ] Namespace
-    - [ ] Contain parsed values for arguments
-    - [ ] Provide statically-typed value-returning methods
+- [x] Namespace
+    - [x] Contain parsed values for arguments
 - [ ] Actions
     - [x] store
     - [x] store_const
@@ -75,10 +74,10 @@ argparse packaged are included.
     - [x] append_const
     - [ ] count
     - [x] help
-    - [ ] version
+    - [x] version
 - [ ] Project / General milestones
     - [ ] Documentation / examples
     - [ ] Unit tests
         - [ ] Unit testing using Testify package
-    - [ ] Strong code coverage
-    - [ ] Comprehensive & cohesive error messages
+    - [X] Strong code coverage
+    - [X] Comprehensive & cohesive error messages
