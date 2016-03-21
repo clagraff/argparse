@@ -187,19 +187,27 @@ func (p *Parser) GetVersion() string {
 // Parser accepts a slice of strings as options and arguments to be parsed. The
 // parser will call each encountered option's action. Unexpected options will
 // cause an error. All errors are returned.
-func (p *Parser) Parse(allArgs ...string) (*Namespace, error) {
+func (p *Parser) Parse(allArgs ...string) (*Namespace, []string, error) {
 	if p.Namespace == nil {
 		p.Namespace = NewNamespace()
 	}
 
 	requiredOptions := make(map[string]*Option)
+	remainderOptions := make(map[string]*Option)
 	var err error
+
+	var optionListing []*Option
 
 	for _, option := range p.Options {
 		if option.IsRequired == true {
 			requiredOptions[option.DisplayName()] = option
 		}
 		p.Namespace.Set(option.DestName, option.DefaultVal)
+		if strings.ToLower(option.ArgNum) == "r" {
+			remainderOptions[option.DisplayName()] = option
+		} else {
+			optionListing = append(optionListing, option)
+		}
 	}
 
 	optionNames, args := extractOptions(allArgs...)
@@ -213,6 +221,8 @@ func (p *Parser) Parse(allArgs ...string) (*Namespace, error) {
 			if f.IsPublicName(optionName) == true {
 				if _, ok := requiredOptions[f.DisplayName()]; ok {
 					delete(requiredOptions, f.DisplayName())
+				} else if _, ok := remainderOptions[f.DisplayName()]; ok {
+					continue
 				}
 				option = f
 				break
@@ -220,12 +230,24 @@ func (p *Parser) Parse(allArgs ...string) (*Namespace, error) {
 		}
 
 		if option == nil {
-			return nil, InvalidOptionErr{optionName}
+			return nil, nil, InvalidOptionErr{optionName}
 		}
 
 		args, err = option.DesiredAction(p, option, args...)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
+		}
+	}
+
+	if len(args) > 0 {
+		for _, opt := range remainderOptions {
+			if _, ok := requiredOptions[opt.DisplayName()]; ok {
+				delete(requiredOptions, opt.DisplayName())
+			}
+			_, err := opt.DesiredAction(p, opt, args...)
+			if err != nil {
+				return nil, nil, err
+			}
 		}
 	}
 
@@ -238,16 +260,16 @@ func (p *Parser) Parse(allArgs ...string) (*Namespace, error) {
 		}
 		args, err = f.DesiredAction(p, f, args...)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 	}
 
 	if len(requiredOptions) != 0 {
 		for _, option := range requiredOptions {
-			return nil, MissingOptionErr{option.DisplayName()}
+			return nil, nil, MissingOptionErr{option.DisplayName()}
 		}
 	}
-	return p.Namespace, nil
+	return p.Namespace, args, nil
 }
 
 // Path will set the parser's program name to the program name specified by the

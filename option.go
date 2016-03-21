@@ -191,7 +191,7 @@ func (f *Option) GetUsage() string {
 		f.MetaVarText = []string{choices}
 	}
 
-	if strings.ContainsAny(f.ArgNum, "?*+") == false {
+	if strings.ContainsAny(f.ArgNum, "?*+rR") == false {
 		count := 0
 		max, err := strconv.Atoi(f.ArgNum)
 		if err != nil {
@@ -221,6 +221,14 @@ func (f *Option) GetUsage() string {
 				" [",
 				strings.ToUpper(f.MetaVarText[0]),
 				"]",
+			)
+		case "r":
+			fallthrough
+		case "R":
+			usage = append(
+				usage,
+				" ",
+				" ...",
 			)
 		case "+":
 			fallthrough
@@ -297,7 +305,7 @@ func (f *Option) MetaVar(meta string, metaSlice ...string) *Option {
 // or more arguments.
 func (f *Option) Nargs(nargs string) *Option {
 	// TODO: Allow "r"/"R" for remainder args
-	allowedChars := []string{"?", "*", "+"}
+	allowedChars := []string{"?", "*", "+", "r", "R"}
 	for _, char := range allowedChars {
 		if nargs == char {
 			f.ArgNum = char

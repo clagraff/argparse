@@ -27,11 +27,10 @@ func Store(p *Parser, f *Option, args ...string) ([]string, error) {
 			p.Namespace.Set(f.DestName, args[0])
 			return args[1:], nil
 		}
-	} else if strings.ContainsAny(f.ArgNum, "*+") == true {
+	} else if strings.ContainsAny(f.ArgNum, "*+rR") == true {
 		if f.ArgNum == "+" && len(args) == 0 {
 			return args, TooFewArgsErr{*f}
 		}
-
 		var values []interface{}
 		for len(args) > 0 {
 			if err := ValidateChoice(*f, args[0]); err != nil {
@@ -166,7 +165,7 @@ func Append(p *Parser, f *Option, args ...string) ([]string, error) {
 		} else {
 			appendValue(p, f, f.DefaultVal)
 		}
-	} else {
+	} else if strings.ContainsAny(f.ArgNum, "*+rR") == true {
 		if f.ArgNum == "+" && len(args) == 0 {
 			return args, MissingOneOrMoreArgsErr{*f}
 		}
