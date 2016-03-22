@@ -34,6 +34,14 @@ func (p *Parser) AddOption(f *Option) *Parser {
 	return p
 }
 
+// AddOptions appends the provided options to the current parser.
+func (p *Parser) AddOptions(opts ...*Option) *Parser {
+	for _, opt := range opts {
+		p.Options = append(p.Options, opt)
+	}
+	return p
+}
+
 // GetOption retrieves the first option with a public name matching the specified
 // name, or will otherwise return an error.
 func (p *Parser) GetOption(name string) (*Option, error) {

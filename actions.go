@@ -31,7 +31,7 @@ func Store(p *Parser, f *Option, args ...string) ([]string, error) {
 		if f.ArgNum == "+" && len(args) == 0 {
 			return args, TooFewArgsErr{*f}
 		}
-		var values []interface{}
+		var values []string
 		for len(args) > 0 {
 			if err := ValidateChoice(*f, args[0]); err != nil {
 				return args, err
@@ -101,7 +101,7 @@ func StoreFalse(p *Parser, f *Option, args ...string) ([]string, error) {
 	if f.ArgNum != "0" {
 		panic(fmt.Sprintf("option '%s' cannot expect any arguments.", f.DisplayName()))
 	}
-	p.Namespace.Set(f.DestName, false)
+	p.Namespace.Set(f.DestName, "false")
 
 	return args, nil
 }
@@ -111,7 +111,7 @@ func StoreTrue(p *Parser, f *Option, args ...string) ([]string, error) {
 	if f.ArgNum != "0" {
 		panic(fmt.Sprintf("option '%s' cannot expect any arguments.", f.DisplayName()))
 	}
-	p.Namespace.Set(f.DestName, true)
+	p.Namespace.Set(f.DestName, "true")
 
 	return args, nil
 }
@@ -123,7 +123,7 @@ func Append(p *Parser, f *Option, args ...string) ([]string, error) {
 		if p.Namespace.KeyExists(f.DestName) == false {
 			p.Namespace.Set(f.DestName, make([]string, 0))
 		}
-		slice, err := p.Namespace.Get(f.DestName)
+		slice, err := p.Namespace.Try(f.DestName)
 		if err != nil {
 			return err
 		}
@@ -196,7 +196,7 @@ func AppendConst(p *Parser, f *Option, args ...string) ([]string, error) {
 	if p.Namespace.KeyExists(f.DestName) == false {
 		p.Namespace.Set(f.DestName, make([]string, 0))
 	}
-	slice, err := p.Namespace.Get(f.DestName)
+	slice, err := p.Namespace.Try(f.DestName)
 	if err != nil {
 		return nil, err
 	}
@@ -209,7 +209,7 @@ func AppendConst(p *Parser, f *Option, args ...string) ([]string, error) {
 // and help information for each option to stdout. Provided arguments remain unchanged.
 func ShowHelp(p *Parser, f *Option, args ...string) ([]string, error) {
 	p.ShowHelp()
-	return args, nil
+	return args, ShowHelpErr{}
 }
 
 // ShowVersion calls the parser's ShowVersion function to output parser/program
