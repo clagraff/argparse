@@ -33,6 +33,7 @@ func main() {
     p := parg.NewParser("Output text based on user input")
     p.AddHelp() // Enable `--help` & `-h` to display usage text to the user.
 
+
     // Parse all available program arguments (except for the program path).
     if err := p.Parse(os.Args[1:]...); err != nil {
         // An error occurred? Print it out, and display the help text!
