@@ -7,23 +7,15 @@ import (
 	"strings"
 )
 
-func NewBoolOption(names, dest, help string) *Option {
+func NewFlag(names, dest, help string) *Option {
 	opt := NewOption(names, dest, help)
 	opt.Nargs("0").Action(StoreTrue).Default("false")
 
 	return opt
 }
 
-func NewConstOption(names, dest, help, value string) *Option {
-	opt := NewOption(names, dest, help)
-	opt.Nargs("0").Action(StoreConst).Const(value)
-
-	return opt
-}
-
-func NewStringOption(names, dest, help string) *Option {
-	opt := NewOption(names, dest, help).Nargs("1").Action(Store)
-	return opt
+func NewArg(names, dest, help string) *Option {
+	return NewOption(names, dest, help).Nargs("1").Action(Store)
 }
 
 // ValidateChoice returns an error if the provided interface value

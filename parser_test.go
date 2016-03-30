@@ -111,7 +111,7 @@ func TestParserGetHelp(t *testing.T) {
 func TestParserGetVersion(t *testing.T) {
 	p := NewParser("some description").Version("1.0.b")
 
-	if p.GetVersion() != "1.0.b" {
+	if p.GetVersion() != "argparse.test version 1.0.b" {
 		t.Errorf("The retrieved version text did not match the expected string")
 	}
 }
