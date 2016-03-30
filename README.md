@@ -31,7 +31,7 @@ import (
 
 func main() {
     p := parg.NewParser("Output text based on user input")
-    p.AddHelp() // Enable `--help` & `-h` to display usage text to the user.
+    p.AddHelp() // Enable `--help` & `-h` to output help text
 
 
     // Parse all available program arguments (except for the program path).
