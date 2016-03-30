@@ -4,7 +4,7 @@
 [![GoDoc](https://godoc.org/github.com/clagraff/parg?status.svg)](https://godoc.org/github.com/clagraff/parg)
 
 ## Description
-A Golang flag & argument parser for program arguments. The goal of parg (program-arguments) is to emulate the usability and functionallity of Python's [argparse](https://docs.python.org/dev/howto/argparse.html#the-basics) package, where setting up a parser and arguments is easy and trivial.
+A Golang flag & argument parser for program arguments. The goal of parg (program-arguments) is to emulate the usability and functionallity of Python's [argparse](https://docs.python.org/dev/howto/argparse.html#the-basics) package, where setting up a parser and arguments is both easy and trivial.
 
 # Install
 Installing is simple, as with most other Golang packages:
