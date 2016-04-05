@@ -22,15 +22,31 @@ type Parser struct {
 // AddHelp adds a new option to output usage information for the current parser
 // and each of its options.
 func (p *Parser) AddHelp() *Parser {
-	helpOption := NewOption("h help", "help", "Display usage information").Action(ShowHelp)
+	helpOption := NewOption("h help", "help", "Show program help").Action(ShowHelp)
 
 	p.Options = append(p.Options, helpOption)
+	return p
+}
+
+// AddVersion adds a new option to the program version.
+func (p *Parser) AddVersion() *Parser {
+	versionOption := NewOption("v version", "version", "Show program version").Action(ShowVersion)
+
+	p.Options = append(p.Options, versionOption)
 	return p
 }
 
 // AddOption appends the provided option to the current parser.
 func (p *Parser) AddOption(f *Option) *Parser {
 	p.Options = append(p.Options, f)
+	return p
+}
+
+// AddOptions appends the provided options to the current parser.
+func (p *Parser) AddOptions(opts ...*Option) *Parser {
+	for _, opt := range opts {
+		p.Options = append(p.Options, opt)
+	}
 	return p
 }
 
@@ -181,7 +197,7 @@ func (p *Parser) GetHelp() string {
 
 // GetVersion will return the version text for the current parser.
 func (p *Parser) GetVersion() string {
-	return p.VersionDesc
+	return p.ProgramName + " version " + p.VersionDesc
 }
 
 // Parser accepts a slice of strings as options and arguments to be parsed. The

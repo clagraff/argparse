@@ -7,6 +7,17 @@ import (
 	"strings"
 )
 
+func NewFlag(names, dest, help string) *Option {
+	opt := NewOption(names, dest, help)
+	opt.Nargs("0").Action(StoreTrue).Default("false")
+
+	return opt
+}
+
+func NewArg(names, dest, help string) *Option {
+	return NewOption(names, dest, help).Nargs("1").Action(Store)
+}
+
 // ValidateChoice returns an error if the provided interface value
 // does not exists as valid choice for the provided flag.
 func ValidateChoice(f Option, arg string) error {

@@ -5,6 +5,11 @@ import (
 	"strings"
 )
 
+// ShowHelpErr indicates that the program was instructed to show it's help text.
+type ShowHelpErr struct{}
+
+func (err ShowHelpErr) Error() string { return "" }
+
 // InvalidChoiceErr indicates that an argument is not among the valid choices
 // for the option.
 type InvalidChoiceErr struct {

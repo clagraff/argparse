@@ -78,7 +78,7 @@ func TestStore_AnyNargs(t *testing.T) {
 		t.Error("An error was not expected")
 	}
 
-	if len(p.Namespace.Mapping[f.DestName].([]interface{})) != 6 {
+	if len(p.Namespace.Mapping[f.DestName].([]string)) != 6 {
 		t.Error("Action did not store correct number of values in parser")
 	}
 
@@ -107,7 +107,7 @@ func TestStore_LeastOneNargs(t *testing.T) {
 		t.Error("An error was not expected")
 	}
 
-	if len(p.Namespace.Mapping[f.DestName].([]interface{})) != 3 {
+	if len(p.Namespace.Mapping[f.DestName].([]string)) != 3 {
 		t.Error("Action did not store correct number of values in parser")
 	}
 
@@ -155,7 +155,7 @@ func TestStoreFalse(t *testing.T) {
 		t.Error("An error was not expected")
 	}
 
-	if p.Namespace.Mapping[f.DestName] != false {
+	if p.Namespace.Mapping[f.DestName] != "false" {
 		t.Error("Action did not store the correct boolean value in the parser")
 	}
 }
@@ -176,7 +176,7 @@ func TestStoreTrue(t *testing.T) {
 		t.Error("An error was not expected")
 	}
 
-	if p.Namespace.Mapping[f.DestName] != true {
+	if p.Namespace.Mapping[f.DestName] != "true" {
 		t.Error("Action did not store the correct boolean value in the parser")
 	}
 }
