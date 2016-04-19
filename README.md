@@ -38,11 +38,12 @@ func main() {
     max := argparse.NewArg("m max", "max", "Max number of widgets").Default("0")
 
     p.AddOptions(dry_run, max)
+
     // Parse all available program arguments (except for the program path).
+    
     if ns, err := p.Parse(os.Args[1:]...); err != nil {
         switch err.(type) {
         case argparse.ShowHelpErr, argparse.ShowVersionErr:
-            // We displayed the help text or version. Do not do anything
             return
         default:
             fmt.Println(err, "\n")
