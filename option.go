@@ -15,7 +15,7 @@ func NewFlag(names, dest, help string) *Option {
 }
 
 func NewArg(names, dest, help string) *Option {
-	return NewOption(names, dest, help).Nargs("1").Action(Store)
+	return NewOption(names, dest, help).Nargs("1").Action(Store).Positional()
 }
 
 // ValidateChoice returns an error if the provided interface value
@@ -85,18 +85,18 @@ func NewOption(names, dest, help string) *Option {
 
 // Option contains the necessary attributes for representing a parsable option.
 type Option struct {
-	ArgNum        string
-	ConstVal      string
-	DefaultVal    string
-	DesiredAction Action
-	DestName      string
-	ExpectedType  reflect.Kind
-	HelpText      string
-	IsRequired    bool
-	IsPositional  bool
-	MetaVarText   []string
-	PublicNames   []string
-	ValidChoices  []string
+	ArgNum        string       // Any digit, "+", "?", "*", or "r" and "R" to represent how many arguments an option can expect.
+	ConstVal      string       // A constant value to represent when used with the actions.StoreConst action.
+	DefaultVal    string       // A value to represent the Option by default.
+	DesiredAction Action       // A callback function which will parse an option and its arguments.
+	DestName      string       // A unique identifier to store an option's value within a namespace.
+	ExpectedType  reflect.Kind // The variable-type that an Option's arguments are to be interpretted as.
+	HelpText      string       // Text describing the usage/meaning of the Option.
+	IsRequired    bool         // Indicate if an Option must be present when parsing.
+	IsPositional  bool         // Indicate that an Option is identified by its position when parsing.
+	MetaVarText   []string     // Text used when representing an Option and its arguments.
+	PublicNames   []string     // Qualifiers for identifying the option during parsing.
+	ValidChoices  []string     // A slice of valid choices for arguments of the Option.
 }
 
 // Action sets the option's action to the provided action function.
