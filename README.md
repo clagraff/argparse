@@ -124,10 +124,10 @@ The `r` or `R` characters represent "all remaining arguments" that were not cons
 #### Actions
 A flag's `action` defines what should occur when a flag is parsed. All flags must have an action. By default, a flag will store `true` in the parser when present, and `false` when not. The following are the currently available actions:
 
-__argparse.StoreTrue__ will store `true` in the parser when the flag is present.
-__argparse.StoreFalse__ will store `false` in the parser when the flag is present.
-__argparse.StoreConst__ will store the flag's constant value into the parser when the flag is present.
-__argparse.Store__ will store the appropriate number of arguments into the parser when the flag & arguments are present.
-__argparse.AppendConst__ will append the flag's constant to the flag's slice within the parser.
-__argparse.Append__ will append the appropriate number of arguments into the flag's slice within the parser.
-__argparse.ShowHelp__ will print the parser's generate help text to `stdout`.
+* __argparse.StoreTrue__ will store `true` in the parser when the flag is present.
+* __argparse.StoreFalse__ will store `false` in the parser when the flag is present.
+* __argparse.StoreConst__ will store the flag's constant value into the parser when the flag is present.
+* __argparse.Store__ will store the appropriate number of arguments into the parser when the flag & arguments are present.
+* __argparse.AppendConst__ will append the flag's constant to the flag's slice within the parser.
+* __argparse.Append__ will append the appropriate number of arguments into the flag's slice within the parser.
+* __argparse.ShowHelp__ will print the parser's generate help text to `stdout`.
