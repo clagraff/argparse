@@ -207,14 +207,16 @@ func AppendConst(p *Parser, f *Option, args ...string) ([]string, error) {
 
 // ShowHelp calls the parser's ShowHelp function to output parser usage information
 // and help information for each option to stdout. Provided arguments remain unchanged.
+// It returns a ShowHelpErr error instance, used to prevent further parsing.
 func ShowHelp(p *Parser, f *Option, args ...string) ([]string, error) {
 	p.ShowHelp()
 	return args, ShowHelpErr{}
 }
 
 // ShowVersion calls the parser's ShowVersion function to output parser/program
-// version information. Provided arguments remain unchanged.
+// version information. Provided arguments remain unchanged. It returns a ShowVersionErr
+// instance, used to prevent further parsing.
 func ShowVersion(p *Parser, f *Option, args ...string) ([]string, error) {
 	p.ShowVersion()
-	return args, nil
+	return args, ShowVersionErr{}
 }
