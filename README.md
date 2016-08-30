@@ -43,6 +43,9 @@ func main() {
 	if ns, leftovers, err := p.Parse(os.Args[1:]...); err != nil {
 		switch err.(type) {
 		case argparse.ShowHelpErr, argparse.ShowVersionErr:
+		    // For either ShowHelpErr or ShowVersionErr, the parser has already
+		    // displayed the necessary text to the user. So we end the program 
+		    // by returning.
 			return
 		default:
 			fmt.Println(err, "\n")
