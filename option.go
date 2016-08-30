@@ -7,6 +7,8 @@ import (
 	"strings"
 )
 
+// NewFlag initializes a new Option pointer, sets its Nargs to 0, its action
+// to StoreTrue, and its default value to false.
 func NewFlag(names, dest, help string) *Option {
 	opt := NewOption(names, dest, help)
 	opt.Nargs("0").Action(StoreTrue).Default("false")
@@ -14,8 +16,10 @@ func NewFlag(names, dest, help string) *Option {
 	return opt
 }
 
+// NewArg initializes a new Option pointer, and sets its Nargs to 1, its
+// action to Store, and makes it a positional option.
 func NewArg(names, dest, help string) *Option {
-	return NewOption(names, dest, help).Nargs("1").Action(Store)
+	return NewOption(names, dest, help).Nargs("1").Action(Store).Positional()
 }
 
 // ValidateChoice returns an error if the provided interface value
@@ -84,19 +88,30 @@ func NewOption(names, dest, help string) *Option {
 }
 
 // Option contains the necessary attributes for representing a parsable option.
+// You can create a vanilla Option by using the NewOption function, or you can
+// create Flag-type or Argument-type Option using the NewFlag and NewArg functions,
+// respectivly.
+//
+// An example of using these functions can be seen below:
+//
+//		o := argparse.NewOption("-o", "output", "Enable output")
+//		o.Positional().Required().Nargs("0").Action(StoreTrue).Default("false")
+//
+//		f := argparse.NewFlag("-n --dry", "dryRun", "Enable dry-run mode")
+//		a := argparse.NewArg("--in", "inputPath", "Path to specified input file")
 type Option struct {
-	ArgNum        string
-	ConstVal      string
-	DefaultVal    string
-	DesiredAction Action
-	DestName      string
-	ExpectedType  reflect.Kind
-	HelpText      string
-	IsRequired    bool
-	IsPositional  bool
-	MetaVarText   []string
-	PublicNames   []string
-	ValidChoices  []string
+	ArgNum        string       // Any digit, "+", "?", "*", or "r" and "R" to represent how many arguments an option can expect.
+	ConstVal      string       // A constant value to represent when used with the actions.StoreConst action.
+	DefaultVal    string       // A value to represent the Option by default.
+	DesiredAction Action       // A callback function which will parse an option and its arguments.
+	DestName      string       // A unique identifier to store an option's value within a namespace.
+	ExpectedType  reflect.Kind // The variable-type that an Option's arguments are to be interpretted as.
+	HelpText      string       // Text describing the usage/meaning of the Option.
+	IsRequired    bool         // Indicate if an Option must be present when parsing.
+	IsPositional  bool         // Indicate that an Option is identified by its position when parsing.
+	MetaVarText   []string     // Text used when representing an Option and its arguments.
+	PublicNames   []string     // Qualifiers for identifying the option during parsing.
+	ValidChoices  []string     // A slice of valid choices for arguments of the Option.
 }
 
 // Action sets the option's action to the provided action function.
@@ -313,23 +328,33 @@ func (f *Option) MetaVar(meta string, metaSlice ...string) *Option {
 // the absolute number of arguments to be expected. The `?` character represents
 // an expection of zero or one arguments. The `*` character represents an expectation
 // of any number or arguments. The `+` character represents an expectation of one
-// or more arguments.
-func (f *Option) Nargs(nargs string) *Option {
+// or more arguments. The `r` and `R` characters represent using all arguments
+// not used after the initial parsing of options.
+func (f *Option) Nargs(nargs interface{}) *Option {
+	var value string
+	switch t := nargs.(type) {
+	case string:
+		value = t
+	case int:
+		value = strconv.Itoa(t)
+	default:
+		panic(fmt.Errorf("Invalid narg type. Must be an int or string."))
+	}
 	// TODO: Allow "r"/"R" for remainder args
 	allowedChars := []string{"?", "*", "+", "r", "R"}
 	for _, char := range allowedChars {
-		if nargs == char {
+		if value == char {
 			f.ArgNum = char
 			return f
 		}
 	}
 
-	_, err := strconv.Atoi(nargs)
+	_, err := strconv.Atoi(value)
 	if err != nil {
-		panic(fmt.Errorf("Invalid nargs: '%s' Must be an int or one of: '?*+'", nargs))
+		panic(fmt.Errorf("Invalid nargs: '%s' Must be an int or one of: '?*+r'", nargs))
 	}
 
-	f.ArgNum = nargs
+	f.ArgNum = value
 	return f
 }
 
