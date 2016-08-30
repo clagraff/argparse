@@ -17,8 +17,7 @@ Boom! All set! Feel free to read on for examples on getting started and using th
 
 # The Basics
 ## Create a parser
-Imagine we have a basic program which outputs text to the user depending on which flags/arguments they provide. We need create a parse, create and include our various options,
-and then parse our programs arguments. It would be something like:
+Here we have a basic program which greets a user by a provided name, optionally in uppercase. We need create a parser, include our option and flag, and then parse our programs arguments. It could look something like:
 
 ```go
 package main
@@ -35,8 +34,8 @@ func main() {
 	p := argparse.NewParser("Output a friendly greeting").Version("1.3.0a")
 	p.AddHelp().AddVersion() // Enable help and version flags
 
-	dry_run := argparse.NewFlag("u upper", "upper", "Use uppercase text").Default("false")
-	max := argparse.NewArg("n name", "name", "Name of person to greet").Default("John")
+	upperFlag := argparse.NewFlag("u", "upper", "Use uppercase text").Default("false")
+	nameOption := argparse.NewArg("n name", "name", "Name of person to greet").Default("John").Required()
 
 	p.AddOptions(dry_run, max)
 
@@ -58,51 +57,68 @@ func main() {
 		}
 
 		fmt.Printf("Hello, %s!\n", name)
-		if len(leftovers) > 0 
-		{
-            // Print slice of unexpected arguments passed to the program.
-			fmt.Println("\nUnused args:", leftovers) 
+		if len(leftovers) > 0 {
+			fmt.Println("\nUnused args:", leftovers)
 		}
 	}
 }
 ```
 
-A parser can provide a version number, automatically add `-h --help` and `-v --version`
-options, and is used to contain a collection of Options.
+You could then run it and receive the following output:
 
-## Options
-Options are expected parameters to your parser. `argparse.Option` is the base
-struct for parseable options. 
+```bash
+> go run main.go Luke
+Hello, Luke!
 
-Options can represent a variety of input types, but are always serialized to
-a `string`. Options may be required or not, may be positional or not, can have
-a variable number of parameters, and can operate in a variety of manners.
+> go run main.go Vader -u
+Hello, VADER!
 
-That said, there are two common types of Options. As such, help functions are 
-included to make it easier to create them: Flags and Positional Arguments.
+> go run main.go
+n, name: too few arguments
 
-### Flags
-Flags represent non-positional, boolean arguments. These Options are `"false"` 
-by default, will utilize the `argparse.StoreTrue` action. They do not any parameters. You can create a new flag using:
+usage: main [-h] [-v] [-u] [n NAME]
+
+Output a friendly greeting
+
+positional arguments:
+  [n NAME]       Name of person to greet
+
+optional arguments:
+  -h, --help     Show program help
+  -v, --version  Show program version
+  -u, --upper    Use uppercase text
+```
+
+## Arguments
+Arguments are command-line values passed to the program when its execution starts. When these
+values are expected by the program, we use a convention of classifying these arguments
+into two types: Flags and Options.
+
+### Types
+#### Flags
+Flags represent non-positional, boolean arguments. These arguments are `"false"` 
+by default, will utilize the `argparse.StoreTrue` action. They do not consume 
+any additional arguments other than themselves. You can create a new flag using:
 
 ```go
-// Create a -d --default flag, called "use-default", with a provided description.
+// Create a short and long flag for "use-default", -d --default, with a description.
 use_default := argparse.NewFlag("d default", "use-default", "Enable the default mode")
 ```
 
-### Arguments
-Arguments represent positional, 1-parameter options. They will store the
-value associated with the Option (to be retrieved & used later).
+`argparse.Option` is the struct used for creating parseable options. 
 
+#### Options
+Options are arguments which store/represent one or more values. While options 
+can represent a variety of input types, they are always serialized to
+a `string`. Options may be required or not, may be positional or not, can have
+a variable number of parameters, and can operate in a variety of manners.
+
+Here is an example of an option `foo`, which has a default value of `bar`, 
+is required, and expects 1 additional argument which will be stored as `foo`'s value
 ```go
-// Create a --foobar arg, called "foobar", with a provided description.
-foobar := argparse.NewFlag("foobar", "foobar", "A string to foobar with")
+// Create a required Option -foo, with a default value of "bar", that expects and stores 1 argument.
+f := argparse.NewOption("-f --foo", "foo", "A foo option").Default("bar").Nargs("1").Required().Action(argparse.Store)
 ```
-
-### Options
-A option is a representation of a value, usually provided to a program via its command line parameters. An option is indicated either by
-its identifying qualifier (e.g.: `-f`, `--display`, `-V`, etc), or by its 
-position (for positional options).
 
 ### Methods
 Options can be configured in a variety of ways. Therefore, method-chaining is
