@@ -24,34 +24,46 @@ and then parse our programs arguments. It would be something like:
 package main
 
 import (
-    "fmt"
-    "os"
+	"fmt"
+	"os"
+	"strings"
 
-    "github.com/clagraff/argparse"
+	"github.com/clagraff/argparse"
 )
 
 func main() {
-    p := argparse.NewParser("Output text based on user input").Version("1.3.0a")
-    p.AddHelp().AddVersion() // Enable help and version flags
+	p := argparse.NewParser("Output a friendly greeting").Version("1.3.0a")
+	p.AddHelp().AddVersion() // Enable help and version flags
 
-    dry_run := argparse.NewFlag("n dry-run", "dry", "Enable dry-run mode").Default("false")
-    max := argparse.NewArg("m max", "max", "Max number of widgets").Default("0")
+	dry_run := argparse.NewFlag("u upper", "upper", "Use uppercase text").Default("false")
+	max := argparse.NewArg("n name", "name", "Name of person to greet").Default("John")
 
-    p.AddOptions(dry_run, max)
+	p.AddOptions(dry_run, max)
 
-    // Parse all available program arguments (except for the program path).
-    
-    if ns, err := p.Parse(os.Args[1:]...); err != nil {
-        switch err.(type) {
-        case argparse.ShowHelpErr, argparse.ShowVersionErr:
-            return
-        default:
-            fmt.Println(err, "\n")
-            p.ShowHelp()
-        }
-    } else {
-        // ... do stuff    
-    }
+	// Parse all available program arguments (except for the program path).
+	if ns, leftovers, err := p.Parse(os.Args[1:]...); err != nil {
+		switch err.(type) {
+		case argparse.ShowHelpErr, argparse.ShowVersionErr:
+			return
+		default:
+			fmt.Println(err, "\n")
+			p.ShowHelp()
+		}
+	} else {
+		name := ns.String("name")
+		upper := ns.String("upper") == "true"
+
+		if upper == true {
+			name = strings.ToUpper(name)
+		}
+
+		fmt.Printf("Hello, %s!\n", name)
+		if len(leftovers) > 0 
+		{
+            // Print slice of unexpected arguments passed to the program.
+			fmt.Println("\nUnused args:", leftovers) 
+		}
+	}
 }
 ```
 
