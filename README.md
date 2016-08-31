@@ -23,23 +23,47 @@ Imagine we have a basic program which outputs text to the user depending on whic
 package main
 
 import (
-    "fmt"
-    "os"
+	"fmt"
+	"os"
+	"strings"
 
-    "github.com/parg"
+	"github.com/clagraff/argparse"
 )
 
 func main() {
-    p := parg.NewParser("Output text based on user input")
-    p.AddHelp() // Enable `--help` & `-h` to output help text
+	p := argparse.NewParser("Output a friendly greeting").Version("1.3.0a")
+	p.AddHelp().AddVersion() // Enable help and version flags
 
+	upperFlag := argparse.NewFlag("u", "upper", "Use uppercase text").Default("false")
+	nameOption := argparse.NewArg("n name", "name", "Name of person to greet").Default("John").Required()
 
-    // Parse all available program arguments (except for the program path).
-    if err := p.Parse(os.Args[1:]...); err != nil {
-        // An error occurred? Print it out, and display the help text!
-        fmt.Println(err)
-        p.ShowHelp()
-    }
+	p.AddOptions(upperFlag, nameOption)
+
+	// Parse all available program arguments (except for the program path).
+	if ns, leftovers, err := p.Parse(os.Args[1:]...); err != nil {
+		switch err.(type) {
+		case argparse.ShowHelpErr, argparse.ShowVersionErr:
+			// For either ShowHelpErr or ShowVersionErr, the parser has already
+			// displayed the necessary text to the user. So we end the program
+			// by returning.
+			return
+		default:
+			fmt.Println(err, "\n")
+			p.ShowHelp()
+		}
+	} else {
+		name := ns.String("name")
+		upper := ns.String("upper") == "true"
+
+		if upper == true {
+			name = strings.ToUpper(name)
+		}
+
+		fmt.Printf("Hello, %s!\n", name)
+		if len(leftovers) > 0 {
+			fmt.Println("\nUnused args:", leftovers)
+		}
+	}
 }
 ```
 
@@ -67,17 +91,8 @@ func main() {
 
     p.AddFlag(foo).AddFlag(num)
 
-    // Parse all available program arguments (except for the program path).
-    if err := p.Parse(os.Args[1:]...); err != nil {
-        // An error occurred? Print it out, and display the help text!
-        fmt.Println(err)
-        p.ShowHelp()
-    } else {
-        if p.Values["foo"] == true {
-            fmt.Println("foobar!")
-        }
-        fmt.Println(p.Values["i"])
-    }
+    // ....
+
 }
 ```
 

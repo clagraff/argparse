@@ -216,5 +216,5 @@ func ShowHelp(p *Parser, f *Option, args ...string) ([]string, error) {
 // version information. Provided arguments remain unchanged.
 func ShowVersion(p *Parser, f *Option, args ...string) ([]string, error) {
 	p.ShowVersion()
-	return args, nil
+	return args, ShowVersionErr{}
 }
