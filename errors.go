@@ -102,13 +102,13 @@ func (err MissingOneOrMoreArgsErr) Error() string {
 	return fmt.Sprintf(msg, err.opt.DisplayName())
 }
 
-// MissingCommandErr indicated that commands were available, but none were used.
-type MissingCommandErr struct {
+// MissingParserErr indicated that commands were available, but none were used.
+type MissingParserErr struct {
 	Parsers map[string]*Parser
 }
 
-// Error will return a string error message for the MissingCommandErr
-func (err MissingCommandErr) Error() string {
+// Error will return a string error message for the MissingParserErr
+func (err MissingParserErr) Error() string {
 	var names []string
 	for name, _ := range err.Parsers {
 		names = append(names, name)

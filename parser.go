@@ -300,7 +300,7 @@ func (p *Parser) Parse(allArgs ...string) (*Namespace, []string, error) {
 	if len(p.Parsers) > 0 {
 		var usedParser bool
 		if len(allArgs) <= 0 {
-			return p.Namespace, nil, MissingCommandErr{p.Parsers}
+			return p.Namespace, nil, MissingParserErr{p.Parsers}
 		}
 		for name, parser := range p.Parsers {
 			if allArgs[0] == name {
@@ -332,7 +332,7 @@ func (p *Parser) Parse(allArgs ...string) (*Namespace, []string, error) {
 		}
 
 		if usedParser != true {
-			return nil, nil, MissingCommandErr{p.Parsers}
+			return nil, nil, MissingParserErr{p.Parsers}
 		}
 	}
 
