@@ -12,6 +12,7 @@ type Parser struct {
 	ProgramName string
 	AllowAbbrev bool
 	Options     []*Option
+	Parsers     map[string]*Parser
 	UsageText   string
 	VersionDesc string
 	Namespace   *Namespace
@@ -48,6 +49,15 @@ func (p *Parser) AddOptions(opts ...*Option) *Parser {
 	return p
 }
 
+// AddParser appends the provided parse to the current parser as an available command.
+func (p *Parser) AddParser(name string, parser *Parser) *Parser {
+	if p.Parsers == nil {
+		p.Parsers = make(map[string]*Parser)
+	}
+	p.Parsers[name] = parser
+	return p
+}
+
 // GetOption retrieves the first option with a public name matching the specified
 // name, or will otherwise return an error.
 func (p *Parser) GetOption(name string) (*Option, error) {
@@ -63,6 +73,18 @@ func (p *Parser) GetOption(name string) (*Option, error) {
 	return nil, InvalidFlagNameErr{name}
 }
 
+// GetParser retrieves the desired sub-parser from the current parser, or returns
+// an error if the desired parser does not exist.
+func (p Parser) GetParser(name string) (*Parser, error) {
+	if len(name) <= 0 {
+		return nil, InvalidParserNameErr{name}
+	}
+	if parser, ok := p.Parsers[name]; ok == true {
+		return parser, nil
+	}
+	return nil, InvalidParserNameErr{name}
+}
+
 // GetHelp returns a string containing the parser's description text,
 // and the usage information for each option currently incorperated within
 // the parser.
@@ -70,8 +92,10 @@ func (p *Parser) GetHelp() string {
 	// Get screen width to determine max line lengths later.
 	screenWidth := getScreenWidth()
 
-	var positional []*Option
+	var commands []string
+	var commandStr string
 	var notPositional []*Option
+	var positional []*Option
 	var usage []string
 
 	header := []string{"usage:", p.ProgramName}
@@ -83,7 +107,6 @@ func (p *Parser) GetHelp() string {
 	longest := 0
 
 	for _, arg := range p.Options {
-		//if arg.IsPositional == false {
 		if arg.IsPositional == false {
 			notPositional = append(notPositional, arg)
 		} else {
@@ -103,6 +126,23 @@ func (p *Parser) GetHelp() string {
 		if headerLen+len(argUsg) > screenWidth {
 			headerLen = headerIndent
 			notPosArgs = append(notPosArgs, join("", "\n", spacer(headerIndent)))
+		}
+	}
+
+	if len(p.Parsers) > 0 {
+		for command, _ := range p.Parsers {
+			commands = append(commands, command)
+		}
+		commandStr = join("", "{", join(",", commands...), "}")
+		if len(commandStr) > longest {
+			longest = len(commandStr)
+		}
+
+		posArgs = append(posArgs, commandStr)
+		headerLen = headerLen + len(commandStr)
+		if headerLen+len(commandStr) > screenWidth {
+			headerLen = headerIndent
+			posArgs = append(posArgs, join("", "\n", spacer(headerIndent)))
 		}
 	}
 
@@ -132,10 +172,15 @@ func (p *Parser) GetHelp() string {
 		usage = append(usage, "\n", p.UsageText, "\n")
 	}
 
-	if len(positional) > 0 {
+	if len(positional) > 0 || len(commandStr) > 0 {
 		usage = append(usage, "\n", "positional arguments:", "\n")
 		var names []string
 		var help []string
+
+		if len(commandStr) > 0 {
+			names = append(names, commandStr)
+			help = append(help, "commands")
+		}
 
 		for _, arg := range positional {
 			names = append(names, arg.GetUsage())
@@ -205,7 +250,6 @@ func (p *Parser) Parse(allArgs ...string) (*Namespace, []string, error) {
 	if p.Namespace == nil {
 		p.Namespace = NewNamespace()
 	}
-
 	requiredOptions := make(map[string]*Option)
 	remainderOptions := make(map[string]*Option)
 	var err error
@@ -250,6 +294,45 @@ func (p *Parser) Parse(allArgs ...string) (*Namespace, []string, error) {
 		args, err = option.DesiredAction(p, option, args...)
 		if err != nil {
 			return nil, nil, err
+		}
+	}
+
+	if len(p.Parsers) > 0 {
+		var usedParser bool
+		if len(allArgs) <= 0 {
+			return p.Namespace, nil, MissingCommandErr{p.Parsers}
+		}
+		for name, parser := range p.Parsers {
+			if allArgs[0] == name {
+				if len(allArgs) > 0 {
+					allArgs = allArgs[1:len(allArgs)]
+				} else {
+					allArgs = []string{}
+				}
+				n, a, err := parser.Parse(allArgs...)
+				if err != nil {
+					switch err.(type) {
+					case ShowHelpErr, ShowVersionErr:
+						return nil, nil, err
+					default:
+						parser.ShowHelp()
+						return nil, nil, ShowHelpErr{}
+					}
+				}
+				if n != nil {
+					p.Namespace.merge(n)
+				}
+				allArgs = a
+				if err != nil {
+					return nil, nil, err
+				}
+				usedParser = true
+				break
+			}
+		}
+
+		if usedParser != true {
+			return nil, nil, MissingCommandErr{p.Parsers}
 		}
 	}
 
@@ -330,7 +413,7 @@ func (p *Parser) Version(version string) *Parser {
 func NewParser(desc string) *Parser {
 	p := Parser{UsageText: desc}
 	p.Namespace = NewNamespace()
-
+	p.Parsers = make(map[string]*Parser)
 	if len(os.Args) >= 1 {
 		p.Path(os.Args[0])
 	}
