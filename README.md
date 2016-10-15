@@ -79,12 +79,12 @@ Hello, VADER!
 > go run main.go
 n, name: too few arguments
 
-usage: main [-h] [-v] [-u] [n NAME]
+usage: main [-h] [-v] [-u] n NAME
 
 Output a friendly greeting
 
 positional arguments:
-  [n NAME]       Name of person to greet
+  n NAME       Name of person to greet
 
 optional arguments:
   -h, --help     Show program help
