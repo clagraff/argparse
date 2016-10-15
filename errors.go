@@ -19,6 +19,18 @@ func (err InvalidChoiceErr) Error() string {
 
 }
 
+// InvalidParserNameErr indicates that a Command name has already been assigned and cannot be re-assigned.
+type InvalidParserNameErr struct {
+	name string
+}
+
+// Error will return a string error message for the InvalidParserNameErr
+func (err InvalidParserNameErr) Error() string {
+	msg := "invalid command name \"%s\""
+	return fmt.Sprintf(msg, err.name)
+
+}
+
 // InvalidFlagNameErr indicates that an argument with the provided public name
 // not exist.
 type InvalidFlagNameErr struct {
@@ -88,6 +100,21 @@ type MissingOneOrMoreArgsErr struct {
 func (err MissingOneOrMoreArgsErr) Error() string {
 	msg := "%s: at least one argument requireds"
 	return fmt.Sprintf(msg, err.opt.DisplayName())
+}
+
+// MissingParserErr indicated that commands were available, but none were used.
+type MissingParserErr struct {
+	Parsers map[string]*Parser
+}
+
+// Error will return a string error message for the MissingParserErr
+func (err MissingParserErr) Error() string {
+	var names []string
+	for name, _ := range err.Parsers {
+		names = append(names, name)
+	}
+	msg := "must use an available command: %s"
+	return fmt.Sprintf(msg, join("", "{", join(",", names...), "}"))
 }
 
 // MissingOptionErr indicated that an option was required but is missing.
