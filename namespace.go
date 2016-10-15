@@ -30,7 +30,6 @@ func (n *Namespace) KeyExists(key string) bool {
 // merge will take all the values from the other, provided Namespace and copy
 // them to the current Namespace.
 func (n *Namespace) merge(other *Namespace) {
-	fmt.Println(other)
 	if other.Mapping == nil {
 		other.Mapping = make(map[string]interface{})
 	}
