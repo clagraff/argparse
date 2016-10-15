@@ -214,7 +214,7 @@ func (p *Parser) Parse(allArgs ...string) (*Namespace, []string, error) {
 
 	for _, option := range p.Options {
 		if option.IsRequired == true {
-			requiredOptions[option.DisplayName()] = option
+			requiredOptions[option.DestName] = option
 		}
 		p.Namespace.Set(option.DestName, option.DefaultVal)
 		if strings.ToLower(option.ArgNum) == "r" {

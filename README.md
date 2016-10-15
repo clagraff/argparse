@@ -37,15 +37,15 @@ func main() {
 	upperFlag := argparse.NewFlag("u", "upper", "Use uppercase text").Default("false")
 	nameOption := argparse.NewArg("n name", "name", "Name of person to greet").Default("John").Required()
 
-	p.AddOptions(dry_run, max)
+	p.AddOptions(upperFlag, nameOption)
 
 	// Parse all available program arguments (except for the program path).
 	if ns, leftovers, err := p.Parse(os.Args[1:]...); err != nil {
 		switch err.(type) {
 		case argparse.ShowHelpErr, argparse.ShowVersionErr:
-		    // For either ShowHelpErr or ShowVersionErr, the parser has already
-		    // displayed the necessary text to the user. So we end the program 
-		    // by returning.
+			// For either ShowHelpErr or ShowVersionErr, the parser has already
+			// displayed the necessary text to the user. So we end the program
+			// by returning.
 			return
 		default:
 			fmt.Println(err, "\n")
@@ -79,12 +79,12 @@ Hello, VADER!
 > go run main.go
 n, name: too few arguments
 
-usage: main [-h] [-v] [-u] [n NAME]
+usage: main [-h] [-v] [-u] n NAME
 
 Output a friendly greeting
 
 positional arguments:
-  [n NAME]       Name of person to greet
+  n NAME       Name of person to greet
 
 optional arguments:
   -h, --help     Show program help
