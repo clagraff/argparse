@@ -30,17 +30,8 @@ import (
 	"github.com/clagraff/argparse"
 )
 
-func main() {
-	p := argparse.NewParser("Output a friendly greeting").Version("1.3.0a")
-	p.AddHelp().AddVersion() // Enable help and version flags
-
-	upperFlag := argparse.NewFlag("u", "upper", "Use uppercase text").Default("false")
-	nameOption := argparse.NewArg("n name", "name", "Name of person to greet").Default("John").Required()
-
-	p.AddOptions(upperFlag, nameOption)
-
-	// Parse all available program arguments (except for the program path).
-	if ns, leftovers, err := p.Parse(os.Args[1:]...); err != nil {
+func callback(p *argparse.Parser, ns *argparse.Namespace, leftovers []string, err error) {
+	if err != nil {
 		switch err.(type) {
 		case argparse.ShowHelpErr, argparse.ShowVersionErr:
 			// For either ShowHelpErr or ShowVersionErr, the parser has already
@@ -51,19 +42,34 @@ func main() {
 			fmt.Println(err, "\n")
 			p.ShowHelp()
 		}
-	} else {
-		name := ns.String("name")
-		upper := ns.String("upper") == "true"
 
-		if upper == true {
-			name = strings.ToUpper(name)
-		}
-
-		fmt.Printf("Hello, %s!\n", name)
-		if len(leftovers) > 0 {
-			fmt.Println("\nUnused args:", leftovers)
-		}
+		return // Exit program
 	}
+
+	name := ns.Get("name").(string)
+	upper := ns.Get("upper").(string) == "true"
+
+	if upper == true {
+		name = strings.ToUpper(name)
+	}
+
+	fmt.Printf("Hello, %s!\n", name)
+	if len(leftovers) > 0 {
+		fmt.Println("\nUnused args:", leftovers)
+	}
+}
+
+func main() {
+	p := argparse.NewParser("Output a friendly greeting", callback).Version("1.3.0a")
+	p.AddHelp().AddVersion() // Enable help and version flags
+
+	upperFlag := argparse.NewFlag("u", "upper", "Use uppercase text").Default("false")
+	nameOption := argparse.NewArg("n name", "name", "Name of person to greet").Default("John").Required()
+
+	p.AddOptions(upperFlag, nameOption)
+
+	// Parse all available program arguments (except for the program path).
+	p.Parse(os.Args[1:]...)
 }
 ```
 

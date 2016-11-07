@@ -6,13 +6,19 @@ import (
 	"strings"
 )
 
+type SubParser struct {
+	Parser *Parser
+	Name   string
+}
+
 // Parser contains program-level settings and information, stores options,
 // and values collected upon parsing.
 type Parser struct {
+	Callback    func(*Parser, *Namespace, []string, error)
 	ProgramName string
 	AllowAbbrev bool
 	Options     []*Option
-	Parsers     map[string]*Parser
+	Parsers     []SubParser
 	UsageText   string
 	VersionDesc string
 	Namespace   *Namespace
@@ -52,9 +58,9 @@ func (p *Parser) AddOptions(opts ...*Option) *Parser {
 // AddParser appends the provided parse to the current parser as an available command.
 func (p *Parser) AddParser(name string, parser *Parser) *Parser {
 	if p.Parsers == nil {
-		p.Parsers = make(map[string]*Parser)
+		p.Parsers = make([]SubParser, 0)
 	}
-	p.Parsers[name] = parser
+	p.Parsers = append(p.Parsers, SubParser{Name: name, Parser: parser})
 	return p
 }
 
@@ -79,9 +85,13 @@ func (p Parser) GetParser(name string) (*Parser, error) {
 	if len(name) <= 0 {
 		return nil, InvalidParserNameErr{name}
 	}
-	if parser, ok := p.Parsers[name]; ok == true {
-		return parser, nil
+
+	for _, subP := range p.Parsers {
+		if subP.Name == name {
+			return subP.Parser, nil
+		}
 	}
+
 	return nil, InvalidParserNameErr{name}
 }
 
@@ -130,8 +140,8 @@ func (p *Parser) GetHelp() string {
 	}
 
 	if len(p.Parsers) > 0 {
-		for command, _ := range p.Parsers {
-			commands = append(commands, command)
+		for _, subP := range p.Parsers {
+			commands = append(commands, subP.Name)
 		}
 		commandStr = join("", "{", join(",", commands...), "}")
 		if len(commandStr) > longest {
@@ -246,7 +256,7 @@ func (p *Parser) GetVersion() string {
 // Parser accepts a slice of strings as options and arguments to be parsed. The
 // parser will call each encountered option's action. Unexpected options will
 // cause an error. All errors are returned.
-func (p *Parser) Parse(allArgs ...string) (*Namespace, []string, error) {
+func (p *Parser) Parse(allArgs ...string) {
 	if p.Namespace == nil {
 		p.Namespace = NewNamespace()
 	}
@@ -265,6 +275,33 @@ func (p *Parser) Parse(allArgs ...string) (*Namespace, []string, error) {
 			remainderOptions[option.DisplayName()] = option
 		} else {
 			optionListing = append(optionListing, option)
+		}
+	}
+
+	if len(p.Parsers) > 0 {
+		var usedParser bool
+
+		for _, subParser := range p.Parsers {
+			name := subParser.Name
+			parser := subParser.Parser
+			if len(allArgs) <= 0 {
+				p.Callback(p, p.Namespace, nil, MissingParserErr{p.Parsers})
+				return
+			}
+			if allArgs[0] == name {
+				if len(allArgs) > 0 {
+					allArgs = allArgs[1:len(allArgs)]
+				} else {
+					allArgs = []string{}
+				}
+
+				parser.Parse(allArgs...)
+				return
+			}
+		}
+
+		if usedParser != true {
+			p.Callback(p, p.Namespace, nil, MissingParserErr{p.Parsers})
 		}
 	}
 
@@ -288,51 +325,12 @@ func (p *Parser) Parse(allArgs ...string) (*Namespace, []string, error) {
 		}
 
 		if option == nil {
-			return nil, nil, InvalidOptionErr{optionName}
+			p.Callback(p, p.Namespace, args, InvalidOptionErr{optionName})
 		}
 
 		args, err = option.DesiredAction(p, option, args...)
 		if err != nil {
-			return nil, nil, err
-		}
-	}
-
-	if len(p.Parsers) > 0 {
-		var usedParser bool
-		if len(allArgs) <= 0 {
-			return p.Namespace, nil, MissingParserErr{p.Parsers}
-		}
-		for name, parser := range p.Parsers {
-			if allArgs[0] == name {
-				if len(allArgs) > 0 {
-					allArgs = allArgs[1:len(allArgs)]
-				} else {
-					allArgs = []string{}
-				}
-				n, a, err := parser.Parse(allArgs...)
-				if err != nil {
-					switch err.(type) {
-					case ShowHelpErr, ShowVersionErr:
-						return nil, nil, err
-					default:
-						parser.ShowHelp()
-						return nil, nil, ShowHelpErr{}
-					}
-				}
-				if n != nil {
-					p.Namespace.merge(n)
-				}
-				allArgs = a
-				if err != nil {
-					return nil, nil, err
-				}
-				usedParser = true
-				break
-			}
-		}
-
-		if usedParser != true {
-			return nil, nil, MissingParserErr{p.Parsers}
+			p.Callback(p, p.Namespace, args, err)
 		}
 	}
 
@@ -343,7 +341,7 @@ func (p *Parser) Parse(allArgs ...string) (*Namespace, []string, error) {
 			}
 			_, err := opt.DesiredAction(p, opt, args...)
 			if err != nil {
-				return nil, nil, err
+				p.Callback(p, p.Namespace, args, err)
 			}
 		}
 	}
@@ -357,16 +355,16 @@ func (p *Parser) Parse(allArgs ...string) (*Namespace, []string, error) {
 		}
 		args, err = f.DesiredAction(p, f, args...)
 		if err != nil {
-			return nil, nil, err
+			p.Callback(p, p.Namespace, args, err)
 		}
 	}
 
 	if len(requiredOptions) != 0 {
 		for _, option := range requiredOptions {
-			return nil, nil, MissingOptionErr{option.DisplayName()}
+			p.Callback(p, p.Namespace, args, MissingOptionErr{option.DisplayName()})
 		}
 	}
-	return p.Namespace, args, nil
+	p.Callback(p, p.Namespace, args, nil)
 }
 
 // Path will set the parser's program name to the program name specified by the
@@ -410,12 +408,13 @@ func (p *Parser) Version(version string) *Parser {
 
 // NewParser returns an instantiated pointer to a new parser instance, with
 // a description matching the provided string.
-func NewParser(desc string) *Parser {
+func NewParser(desc string, callback func(*Parser, *Namespace, []string, error)) *Parser {
 	p := Parser{UsageText: desc}
 	p.Namespace = NewNamespace()
-	p.Parsers = make(map[string]*Parser)
+	p.Parsers = make([]SubParser, 0)
 	if len(os.Args) >= 1 {
 		p.Path(os.Args[0])
 	}
+	p.Callback = callback
 	return &p
 }
