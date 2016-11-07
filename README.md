@@ -1,93 +1,153 @@
-# parg
-A Golang flag & argument parser for program arguments. The goal of parg (program-arguments) is to emulate the usability and functionallity of Python's [argparse](https://docs.python.org/dev/howto/argparse.html#the-basics) package, where setting up a parser and arguments is easy and trivial.
+# argparse
+## Project Status
+[ ![Codeship Status for clagraff/argparse](https://codeship.com/projects/68eb7800-af6b-0133-1b97-3e80188314d9/status?branch=master)](https://codeship.com/projects/132507)
+[![GoDoc](https://godoc.org/github.com/clagraff/argparse?status.svg)](https://godoc.org/github.com/clagraff/argparse)
+
+## Description
+A Golang flag & argument parser for program arguments. The goal of argparse (program-arguments) is to emulate the usability and functionallity of Python's [argparse](https://docs.python.org/dev/howto/argparse.html#the-basics) package, where setting up a parser and arguments is both easy and trivial.
 
 # Install
 Installing is simple, as with most other Golang packages:
 
 ```bash
-$ go get github.com/clagraff/pargs
+$ go get github.com/clagraff/argparse
 ```
 
 Boom! All set! Feel free to read on for examples on getting started and using this package.
 
 # The Basics
 ## Create a parser
-Imagine we have a basic program which outputs text to the user depending on which flags/arguments they provide. First, we will need to setup a parser:
+Here we have a basic program which greets a user by a provided name, optionally in uppercase. We need create a parser, include our option and flag, and then parse our programs arguments. It could look something like:
 
 ```go
 package main
 
 import (
-    "fmt"
-    "os"
+	"fmt"
+	"os"
+	"strings"
 
-    "github.com/parg"
+	"github.com/clagraff/argparse"
 )
 
-func main() {
-    p := parg.NewParser("Output text based on user input")
-    p.AddHelp() // Enable `--help` & `-h` to display usage text to the user.
+func callback(p *argparse.Parser, ns *argparse.Namespace, leftovers []string, err error) {
+	if err != nil {
+		switch err.(type) {
+		case argparse.ShowHelpErr, argparse.ShowVersionErr:
+			// For either ShowHelpErr or ShowVersionErr, the parser has already
+			// displayed the necessary text to the user. So we end the program
+			// by returning.
+			return
+		default:
+			fmt.Println(err, "\n")
+			p.ShowHelp()
+		}
 
-    // Parse all available program arguments (except for the program path).
-    if err := p.Parse(os.Args[1:]...); err != nil {
-        // An error occurred? Print it out, and display the help text!
-        fmt.Println(err)
-        p.ShowHelp()
-    }
+		return // Exit program
+	}
+
+	name := ns.Get("name").(string)
+	upper := ns.Get("upper").(string) == "true"
+
+	if upper == true {
+		name = strings.ToUpper(name)
+	}
+
+	fmt.Printf("Hello, %s!\n", name)
+	if len(leftovers) > 0 {
+		fmt.Println("\nUnused args:", leftovers)
+	}
+}
+
+func main() {
+	p := argparse.NewParser("Output a friendly greeting", callback).Version("1.3.0a")
+	p.AddHelp().AddVersion() // Enable help and version flags
+
+	upperFlag := argparse.NewFlag("u", "upper", "Use uppercase text").Default("false")
+	nameOption := argparse.NewArg("n name", "name", "Name of person to greet").Default("John").Required()
+
+	p.AddOptions(upperFlag, nameOption)
+
+	// Parse all available program arguments (except for the program path).
+	p.Parse(os.Args[1:]...)
 }
 ```
 
-## Adding Flags
-Now that we have a parser, lets add two flags and some program functionallity. If
-the user provides a `--foo` flag, we will output the string: `foobar!`. In addition,
-we will output zero by default, or whatever number the user provides with the `-i I` flag.
+You could then run it and receive the following output:
+
+```bash
+> go run main.go Luke
+Hello, Luke!
+
+> go run main.go Vader -u
+Hello, VADER!
+
+> go run main.go
+n, name: too few arguments
+
+usage: main [-h] [-v] [-u] n NAME
+
+Output a friendly greeting
+
+positional arguments:
+  n NAME       Name of person to greet
+
+optional arguments:
+  -h, --help     Show program help
+  -v, --version  Show program version
+  -u, --upper    Use uppercase text
+```
+
+## Arguments
+Arguments are command-line values passed to the program when its execution starts. When these
+values are expected by the program, we use a convention of classifying these arguments
+into two types: Flags and Options.
+
+### Types
+#### Flags
+Flags represent non-positional, boolean arguments. These arguments are `"false"` 
+by default, will utilize the `argparse.StoreTrue` action. They do not consume 
+any additional arguments other than themselves. You can create a new flag using:
 
 ```go
-package main
-
-import (
-    "fmt"
-    "os"
-
-    "github.com/parg"
-)
-
-func main() {
-    p := parg.NewParser("Output text based on user input")
-    p.AddHelp() // Enable `--help` & `-h` to display usage text to the user.
-
-    foo := parg.NewFlag("foo", "Enable foobar text output")
-    num := parg.NewFlag("i", "Set desired integer number to output").Nargs("1").Action(parg.Store).Default(0)
-
-    p.AddFlag(foo).AddFlag(num)
-
-    // Parse all available program arguments (except for the program path).
-    if err := p.Parse(os.Args[1:]...); err != nil {
-        // An error occurred? Print it out, and display the help text!
-        fmt.Println(err)
-        p.ShowHelp()
-    } else {
-        if p.Values["foo"] == true {
-            fmt.Println("foobar!")
-        }
-        fmt.Println(p.Values["i"])
-    }
-}
+// Create a short and long flag for "use-default", -d --default, with a description.
+use_default := argparse.NewFlag("d default", "use-default", "Enable the default mode")
 ```
 
-# Explanations
-## Parser
-The parser is a value which stores program-level information, such as a general description. It also contains all possible flags for the program, and is used to parse through a slice of string arguments. It will attempt to parse every flag, returning errors either due to actions taken as specified by an individual flag, because a flag was required but not present, or because a flag was present which was not defined beforehand.
+`argparse.Option` is the struct used for creating parseable options. 
 
-### Usage Text
-The parse is able to generate usage-text. This text will include a template for calling the program, the parser's usage text, and a list of all possible flags (if any). For each flag, the flag's identifier and help text is displayed.
+#### Options
+Options are arguments which store/represent one or more values. While options 
+can represent a variety of input types, they are always serialized to
+a `string`. Options may be required or not, may be positional or not, can have
+a variable number of parameters, and can operate in a variety of manners.
 
-The usage text will automatically attempt to "word wrap" to the maximum width of the console/terminal window the program is being executed within.
+Here is an example of an option `foo`, which has a default value of `bar`, 
+is required, and expects 1 additional argument which will be stored as `foo`'s value
+```go
+// Create a required Option -foo, with a default value of "bar", that expects and stores 1 argument.
+f := argparse.NewOption("-f --foo", "foo", "A foo option").Default("bar").Nargs("1").Required().Action(argparse.Store)
+```
 
-## Flags
-Flags, also known as "switches" or "options", represent actions to take or settings to modify for a parser. Flags, which look like: `-f` and `--foobar`, may also expect arguments to be present immediatly after them. 
+### Methods
+Options can be configured in a variety of ways. Therefore, method-chaining is
+heavily used to quickly create and setup an option. Consider the following example:
 
-### Nargs
+```go
+// Create a required Option -foo, with a default value of "bar", that expects and stores 1 argument.
+f := argparse.NewOption("-f --foo", "foo", "A foo option").Default("bar").Nargs("1").Required().Action(argparse.Store)
+```
+
+Options can have the following attributes:
+* Is required or not required
+* Is positional or not positional
+* Has a default value
+* Has a constant value
+* Expects a specified number of arguments (or no arguments)
+* Is identified by one or more public qualifiers (e.g.: `-f` or `--foo`)
+* Can require arguments to match specified choices
+
+#### Nargs
 Nargs, a shortening of "numer of arguments", represents the number of arguments a flag expects after its presence in a programs complete list of parameters. This could be an actual number, such as `0` or `5`, or it could be any of the following characters: `*+?`. 
 
 The `*` character represents "any and all arguments" following the flag.
@@ -96,13 +156,15 @@ The `+` character represents "one or more arguments" following the flag.
 
 The `?` character represents "no arguments or only one argument" following the flag.
 
-### Actions
+The `r` or `R` characters represent "all remaining arguments" that were not consumed during parsing. These narg choices do not consume the parse arguments they are applicable to.
+
+#### Actions
 A flag's `action` defines what should occur when a flag is parsed. All flags must have an action. By default, a flag will store `true` in the parser when present, and `false` when not. The following are the currently available actions:
 
-__parg.StoreTrue__ will store `true` in the parser when the flag is present.
-__parg.StoreFalse__ will store `false` in the parser when the flag is present.
-__parg.StoreConst__ will store the flag's constant value into the parser when the flag is present.
-__parg.Store__ will store the appropriate number of arguments into the parser when the flag & arguments are present.
-__parg.AppendConst__ will append the flag's constant to the flag's slice within the parser.
-__parg.Append__ will append the appropriate number of arguments into the flag's slice within the parser.
-__parg.ShowHelp__ will print the parser's generate help text to `stdout`.
+* __argparse.StoreTrue__ will store `true` in the parser when the flag is present.
+* __argparse.StoreFalse__ will store `false` in the parser when the flag is present.
+* __argparse.StoreConst__ will store the flag's constant value into the parser when the flag is present.
+* __argparse.Store__ will store the appropriate number of arguments into the parser when the flag & arguments are present.
+* __argparse.AppendConst__ will append the flag's constant to the flag's slice within the parser.
+* __argparse.Append__ will append the appropriate number of arguments into the flag's slice within the parser.
+* __argparse.ShowHelp__ will print the parser's generate help text to `stdout`.

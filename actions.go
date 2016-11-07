@@ -1,109 +1,154 @@
-package parg
+package argparse
 
 import (
 	"fmt"
-	"reflect"
 	"regexp"
 	"strconv"
 	"strings"
 )
 
 // Action is type to represent a callable function which will operate on a parser,
-// a flag, and an array of argument strings.
-type Action func(*parser, *Flag, ...string) ([]string, error)
+// a option, and an array of argument strings.
+type Action func(*Parser, *Option, ...string) ([]string, error)
 
-// Store will attempt to store the appropriate number of arguments for the flag,
+// Store will attempt to store the appropriate number of arguments for the option,
 // (if any), into the parser. Remaining arguments & any errors are returned.
-func Store(p *parser, f *Flag, args ...string) ([]string, error) {
+func Store(p *Parser, f *Option, args ...string) ([]string, error) {
 	// If we are not expecting any arguments, panic!
 	if f.ArgNum == "0" {
-		panic(fmt.Sprintf("flag '%s' must expect at least one argument", f.DisplayName()))
+		panic(fmt.Sprintf("option '%s' must expect at least one argument", f.DisplayName()))
 	} else if f.ArgNum == "?" {
 		if len(args) > 0 {
-			p.Values[f.DestName] = args[0]
+			if err := ValidateChoice(*f, args[0]); err != nil {
+				return args, err
+			} else if err := ValidateType(*f, args[0]); err != nil {
+				return args, err
+			}
+			p.Namespace.Set(f.DestName, args[0])
 			return args[1:], nil
 		}
-	} else if strings.ContainsAny(f.ArgNum, "*+") == true {
+	} else if strings.ContainsAny(f.ArgNum, "*+rR") == true {
 		if f.ArgNum == "+" && len(args) == 0 {
-			return args, fmt.Errorf("flag '%s' expects at least one argument", f.DisplayName())
+			return args, TooFewArgsErr{*f}
 		}
-
-		var values []interface{}
+		var values []string
 		for len(args) > 0 {
+			if err := ValidateChoice(*f, args[0]); err != nil {
+				return args, err
+			} else if err := ValidateType(*f, args[0]); err != nil {
+				return args, err
+			}
 			values = append(values, args[0])
 			args = args[1:]
 		}
 
-		p.Values[f.DestName] = values
+		p.Namespace.Set(f.DestName, values)
 		return args, nil
 	} else if regexp.MustCompile(`^[1-9]+$`).MatchString(f.ArgNum) == true {
 		num, _ := strconv.Atoi(f.ArgNum)
 		if len(args) < num {
-			return args, fmt.Errorf("flag '%s' is expecting %d argument(s) but was provided %d", f.DisplayName(), num, len(args))
+			if f.IsRequired == true {
+				return args, TooFewArgsErr{*f}
+			} else {
+				return args, nil
+			}
 		}
 
 		if num > 1 {
 			var values []string
-			values = append(values, args[0:num]...)
-			p.Values[f.DestName] = values
+			for _, v := range args[0:num] {
+				if err := ValidateChoice(*f, v); err != nil {
+					return args, err
+				} else if err := ValidateType(*f, v); err != nil {
+					return args, err
+				}
+				values = append(values, v)
+			}
+			p.Namespace.Set(f.DestName, values)
+			if num > len(args) {
+				args = []string{}
+			} else {
+				args = args[num:]
+			}
 		} else {
-			p.Values[f.DestName] = args[0]
+			if err := ValidateChoice(*f, args[0]); err != nil {
+				return args, err
+			} else if err := ValidateType(*f, args[0]); err != nil {
+				return args, err
+			}
+			p.Namespace.Set(f.DestName, args[0])
+			if len(args) > 1 {
+				args = args[1:]
+			} else {
+				args = []string{}
+			}
 		}
 	}
 
 	return args, nil
 }
 
-// StoreConst stores the flag's constant value into the parser. Provided
+// StoreConst stores the option's constant value into the parser. Provided
 // arguments remain unmodified.
-func StoreConst(p *parser, f *Flag, args ...string) ([]string, error) {
+func StoreConst(p *Parser, f *Option, args ...string) ([]string, error) {
 	if f.ArgNum != "0" {
-		panic(fmt.Sprintf("flag '%s' cannot expect any arguments.", f.DisplayName()))
+		panic(fmt.Sprintf("option '%s' cannot expect any arguments.", f.DisplayName()))
 	}
-	p.Values[f.DestName] = f.ConstVal
+	p.Namespace.Set(f.DestName, f.ConstVal)
 
 	return args, nil
 }
 
 // StoreFalse stores a boolean `false` into the parser. Provided arguments remain
 // unmodified.
-func StoreFalse(p *parser, f *Flag, args ...string) ([]string, error) {
+func StoreFalse(p *Parser, f *Option, args ...string) ([]string, error) {
 	if f.ArgNum != "0" {
-		panic(fmt.Sprintf("flag '%s' cannot expect any arguments.", f.DisplayName()))
+		panic(fmt.Sprintf("option '%s' cannot expect any arguments.", f.DisplayName()))
 	}
-	p.Values[f.DestName] = false
+	p.Namespace.Set(f.DestName, "false")
 
 	return args, nil
 }
 
 // StoreTrue stores a boolean `true` into the parser. Provided arguments remain unmodified.
-func StoreTrue(p *parser, f *Flag, args ...string) ([]string, error) {
+func StoreTrue(p *Parser, f *Option, args ...string) ([]string, error) {
 	if f.ArgNum != "0" {
-		panic(fmt.Sprintf("flag '%s' cannot expect any arguments.", f.DisplayName()))
+		panic(fmt.Sprintf("option '%s' cannot expect any arguments.", f.DisplayName()))
 	}
-	p.Values[f.DestName] = true
+	p.Namespace.Set(f.DestName, "true")
 
 	return args, nil
 }
 
-// Append retrives the appropriate number of argumnents for the current flag, (if any),
+// Append retrives the appropriate number of argumnents for the current option, (if any),
 // and appends them individually into the parser. Remaining arguments and errors are returned.
-func Append(p *parser, f *Flag, args ...string) ([]string, error) {
-	appendValue := func(p *parser, f *Flag, value interface{}) {
-		if p.Values[f.DestName] == nil || reflect.ValueOf(p.Values[f.DestName]).Kind() != reflect.Slice {
-			p.Values[f.DestName] = make([]interface{}, 0)
+func Append(p *Parser, f *Option, args ...string) ([]string, error) {
+	appendValue := func(p *Parser, f *Option, value interface{}) error {
+		if p.Namespace.KeyExists(f.DestName) == false {
+			p.Namespace.Set(f.DestName, make([]string, 0))
 		}
-		p.Values[f.DestName] = append(p.Values[f.DestName].([]interface{}), value)
+		slice, err := p.Namespace.Try(f.DestName)
+		if err != nil {
+			return err
+		}
+		slice = append(slice.([]string), value.(string))
+		p.Namespace.Set(f.DestName, slice)
+		return nil
 	}
 
 	if regexp.MustCompile(`^[1-9]+$`).MatchString(f.ArgNum) == true {
 		num, _ := strconv.Atoi(f.ArgNum)
 		if len(args) < num {
-			return args, fmt.Errorf("flag '%s' is expecting %d argument(s) but was provided %d", f.DisplayName(), num, len(args))
+			return args, TooFewArgsErr{*f}
 		}
 
 		count := 0
 		for count < num {
+			if err := ValidateChoice(*f, args[0]); err != nil {
+				return args, err
+			} else if err := ValidateType(*f, args[0]); err != nil {
+				return args, err
+			}
 			appendValue(p, f, args[0])
 			args = args[1:]
 			count++
@@ -114,17 +159,27 @@ func Append(p *parser, f *Flag, args ...string) ([]string, error) {
 		return args, nil
 	} else if f.ArgNum == "?" {
 		if len(args) > 0 {
+			if err := ValidateChoice(*f, args[0]); err != nil {
+				return args, err
+			} else if err := ValidateType(*f, args[0]); err != nil {
+				return args, err
+			}
 			appendValue(p, f, args[0])
 			args = args[1:]
 		} else {
 			appendValue(p, f, f.DefaultVal)
 		}
-	} else {
+	} else if strings.ContainsAny(f.ArgNum, "*+rR") == true {
 		if f.ArgNum == "+" && len(args) == 0 {
-			return args, fmt.Errorf("flag '%s' expects at least one argument", f.DisplayName())
+			return args, MissingOneOrMoreArgsErr{*f}
 		}
 
 		for len(args) > 0 {
+			if err := ValidateChoice(*f, args[0]); err != nil {
+				return args, err
+			} else if err := ValidateType(*f, args[0]); err != nil {
+				return args, err
+			}
 			appendValue(p, f, args[0])
 			args = args[1:]
 		}
@@ -135,23 +190,37 @@ func Append(p *parser, f *Flag, args ...string) ([]string, error) {
 	return args, nil
 }
 
-// AppendConst appends the flag's constant value into the parser. Provided arguments
+// AppendConst appends the option's constant value into the parser. Provided arguments
 // remain unmodified.
-func AppendConst(p *parser, f *Flag, args ...string) ([]string, error) {
+func AppendConst(p *Parser, f *Option, args ...string) ([]string, error) {
 	if f.ArgNum != "0" {
-		panic(fmt.Sprintf("flag '%s' cannot expect any arguments.", f.DisplayName()))
+		panic(fmt.Sprintf("option '%s' cannot expect any arguments.", f.DisplayName()))
 	}
 
-	if p.Values[f.DestName] == nil || reflect.ValueOf(p.Values[f.DestName]).Kind() != reflect.Slice {
-		p.Values[f.DestName] = make([]interface{}, 0)
+	if p.Namespace.KeyExists(f.DestName) == false {
+		p.Namespace.Set(f.DestName, make([]string, 0))
 	}
-	p.Values[f.DestName] = append(p.Values[f.DestName].([]interface{}), f.ConstVal)
+	slice, err := p.Namespace.Try(f.DestName)
+	if err != nil {
+		return nil, err
+	}
+	slice = append(slice.([]string), f.ConstVal)
+	p.Namespace.Set(f.DestName, slice)
 	return args, nil
 }
 
 // ShowHelp calls the parser's ShowHelp function to output parser usage information
-// and help information for each flag to stdout. Provided arguments remain unchanged.
-func ShowHelp(p *parser, f *Flag, args ...string) ([]string, error) {
+// and help information for each option to stdout. Provided arguments remain unchanged.
+// It returns a ShowHelpErr error instance, used to prevent further parsing.
+func ShowHelp(p *Parser, f *Option, args ...string) ([]string, error) {
 	p.ShowHelp()
-	return args, nil
+	return args, ShowHelpErr{}
+}
+
+// ShowVersion calls the parser's ShowVersion function to output parser/program
+// version information. Provided arguments remain unchanged. It returns a ShowVersionErr
+// instance, used to prevent further parsing.
+func ShowVersion(p *Parser, f *Option, args ...string) ([]string, error) {
+	p.ShowVersion()
+	return args, ShowVersionErr{}
 }

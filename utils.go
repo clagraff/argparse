@@ -1,4 +1,4 @@
-package parg
+package argparse
 
 import (
 	"bytes"
@@ -8,50 +8,50 @@ import (
 	"github.com/nsf/termbox-go"
 )
 
-// extractFlags will extract all flags from the slice of arguments provided,
-// returning one slice of invididual flags, and a slice for all other arguments
+// extractOptions will extract all options from the slice of arguments provided,
+// returning one slice of invididual options, and a slice for all other arguments
 // present.
-func extractFlags(allArgs ...string) (flags, args []string) {
+func extractOptions(allArgs ...string) (options, args []string) {
 	count := 0
 	max := len(allArgs)
 
 	for count < max {
 		a := allArgs[count]
 
-		// If we have flag-escape string, assume the next arg is supposed
-		// to be normal text instead of potentially being a flag.
+		// If we have option-escape string, assume the next arg is supposed
+		// to be normal text instead of potentially being a option.
 		if a == "--" && len(allArgs) > count+1 {
 			args = append(args, allArgs[count+1])
 			count = count + 2
 			continue
 		}
 
-		// Using a flag regex, check if we have a normal param or a flag.
-		flagRegex := regexp.MustCompile(`^-{1,2}[a-zA-Z]+$`)
-		if !flagRegex.MatchString(a) {
+		// Using a option regex, check if we have a normal param or a option.
+		optionRegex := regexp.MustCompile(`^-{1,2}[a-zA-Z]+$`)
+		if !optionRegex.MatchString(a) {
 			args = append(args, a)
 			count++
 			continue
 		}
 
-		// Okay, we must have a flag. Which type?
+		// Okay, we must have a option. Which type?
 		isShort := true
 		if len(a) > 2 && a[:2] == "--" {
 			isShort = false
 		}
 
-		// If short-flag, grab all letters individual flags.
+		// If short-option, grab all letters individual options.
 		if isShort == true {
 			for _, c := range a[1:] {
-				flags = append(flags, string(c))
+				options = append(options, string(c))
 			}
 		} else {
-			flags = append(flags, a[2:])
+			options = append(options, a[2:])
 		}
 		count++
 	}
 
-	return flags, args
+	return options, args
 }
 
 // getScreenWidth returns the width of the screen the program is executed within.

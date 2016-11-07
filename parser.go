@@ -1,6 +1,4 @@
-// Package parg provides functionallity to emulate Python's argparse for
-// setting-up and parsing a program's flags & arguments.
-package parg
+package argparse
 
 import (
 	"fmt"
@@ -8,53 +6,106 @@ import (
 	"strings"
 )
 
-// parser contains program-level settings and information, stores flags,
+type SubParser struct {
+	Parser *Parser
+	Name   string
+}
+
+// Parser contains program-level settings and information, stores options,
 // and values collected upon parsing.
-type parser struct {
+type Parser struct {
+	Callback    func(*Parser, *Namespace, []string, error)
 	ProgramName string
 	AllowAbbrev bool
-	Flags       []*Flag
+	Options     []*Option
+	Parsers     []SubParser
 	UsageText   string
-	Values      map[string]interface{}
+	VersionDesc string
+	Namespace   *Namespace
 }
 
-// AddHelp adds a new flag to output usage information for the current parser
-// and each of its flags.
-func (p *parser) AddHelp() *parser {
-	helpFlag := NewFlag("help", "Display usage information").Action(ShowHelp)
-	shortHelpFlag := NewFlag("h", "Display usage information").Action(ShowHelp).Dest("help")
+// AddHelp adds a new option to output usage information for the current parser
+// and each of its options.
+func (p *Parser) AddHelp() *Parser {
+	helpOption := NewOption("h help", "help", "Show program help").Action(ShowHelp)
 
-	p.Flags = append(p.Flags, helpFlag, shortHelpFlag)
+	p.Options = append(p.Options, helpOption)
 	return p
 }
 
-// AddFlag appends the provided flag to the current parser.
-func (p *parser) AddFlag(f *Flag) *parser {
-	p.Flags = append(p.Flags, f)
+// AddVersion adds a new option to the program version.
+func (p *Parser) AddVersion() *Parser {
+	versionOption := NewOption("v version", "version", "Show program version").Action(ShowVersion)
+
+	p.Options = append(p.Options, versionOption)
 	return p
 }
 
-// GetFlag retrieves the first flag with a public name matching the specified
+// AddOption appends the provided option to the current parser.
+func (p *Parser) AddOption(f *Option) *Parser {
+	p.Options = append(p.Options, f)
+	return p
+}
+
+// AddOptions appends the provided options to the current parser.
+func (p *Parser) AddOptions(opts ...*Option) *Parser {
+	for _, opt := range opts {
+		p.Options = append(p.Options, opt)
+	}
+	return p
+}
+
+// AddParser appends the provided parse to the current parser as an available command.
+func (p *Parser) AddParser(name string, parser *Parser) *Parser {
+	if p.Parsers == nil {
+		p.Parsers = make([]SubParser, 0)
+	}
+	p.Parsers = append(p.Parsers, SubParser{Name: name, Parser: parser})
+	return p
+}
+
+// GetOption retrieves the first option with a public name matching the specified
 // name, or will otherwise return an error.
-func (p *parser) GetFlag(name string) (*Flag, error) {
-	for _, flag := range p.Flags {
-		if flag.PublicName == name {
-			return flag, nil
+func (p *Parser) GetOption(name string) (*Option, error) {
+	if len(name) <= 0 {
+		return nil, InvalidFlagNameErr{name}
+	}
+	for _, option := range p.Options {
+		if option.IsPublicName(name) == true {
+			return option, nil
 		}
 	}
 
-	return nil, fmt.Errorf("No argument named: '%s'", name)
+	return nil, InvalidFlagNameErr{name}
+}
+
+// GetParser retrieves the desired sub-parser from the current parser, or returns
+// an error if the desired parser does not exist.
+func (p Parser) GetParser(name string) (*Parser, error) {
+	if len(name) <= 0 {
+		return nil, InvalidParserNameErr{name}
+	}
+
+	for _, subP := range p.Parsers {
+		if subP.Name == name {
+			return subP.Parser, nil
+		}
+	}
+
+	return nil, InvalidParserNameErr{name}
 }
 
 // GetHelp returns a string containing the parser's description text,
-// and the usage information for each flag currently incorperated within
+// and the usage information for each option currently incorperated within
 // the parser.
-func (p *parser) GetHelp() string {
+func (p *Parser) GetHelp() string {
 	// Get screen width to determine max line lengths later.
 	screenWidth := getScreenWidth()
 
-	var positional []*Flag
-	var notPositional []*Flag
+	var commands []string
+	var commandStr string
+	var notPositional []*Option
+	var positional []*Option
 	var usage []string
 
 	header := []string{"usage:", p.ProgramName}
@@ -65,12 +116,18 @@ func (p *parser) GetHelp() string {
 	var posArgs []string
 	longest := 0
 
-	for _, arg := range p.Flags {
-		//if arg.IsPositional == false {
-		notPositional = append(notPositional, arg)
-		name := arg.GetUsage()
-		if len(name) > longest {
-			longest = len(name)
+	for _, arg := range p.Options {
+		if arg.IsPositional == false {
+			notPositional = append(notPositional, arg)
+		} else {
+			positional = append(positional, arg)
+		}
+	}
+
+	for _, arg := range notPositional {
+		displayName := arg.DisplayName()
+		if len(displayName) > longest {
+			longest = len(displayName)
 		}
 
 		argUsg := arg.GetUsage()
@@ -80,21 +137,38 @@ func (p *parser) GetHelp() string {
 			headerLen = headerIndent
 			notPosArgs = append(notPosArgs, join("", "\n", spacer(headerIndent)))
 		}
-		/*} else {
-			positional = append(positional, arg)
-			name := arg.GetUsage()
-			if len(name) > longest {
-				longest = len(name)
-			}
+	}
 
-			argUsg := arg.GetUsage()
-			posArgs = append(posArgs, arg.GetUsage())
-			headerLen = headerLen + len(argUsg)
-			if headerLen+len(argUsg) > screenWidth {
-				headerLen = headerIndent
-				posArgs = append(posArgs, join("", "\n", spacer(headerIndent)))
-			}
-		}*/
+	if len(p.Parsers) > 0 {
+		for _, subP := range p.Parsers {
+			commands = append(commands, subP.Name)
+		}
+		commandStr = join("", "{", join(",", commands...), "}")
+		if len(commandStr) > longest {
+			longest = len(commandStr)
+		}
+
+		posArgs = append(posArgs, commandStr)
+		headerLen = headerLen + len(commandStr)
+		if headerLen+len(commandStr) > screenWidth {
+			headerLen = headerIndent
+			posArgs = append(posArgs, join("", "\n", spacer(headerIndent)))
+		}
+	}
+
+	for _, arg := range positional {
+		displayName := arg.DisplayName()
+		if len(displayName) > longest {
+			longest = len(displayName)
+		}
+
+		argUsg := arg.GetUsage()
+		posArgs = append(posArgs, arg.GetUsage())
+		headerLen = headerLen + len(argUsg)
+		if headerLen+len(argUsg) > screenWidth {
+			headerLen = headerIndent
+			posArgs = append(posArgs, join("", "\n", spacer(headerIndent)))
+		}
 	}
 
 	longest = longest + 4
@@ -108,10 +182,15 @@ func (p *parser) GetHelp() string {
 		usage = append(usage, "\n", p.UsageText, "\n")
 	}
 
-	if len(positional) > 0 {
+	if len(positional) > 0 || len(commandStr) > 0 {
 		usage = append(usage, "\n", "positional arguments:", "\n")
 		var names []string
 		var help []string
+
+		if len(commandStr) > 0 {
+			names = append(names, commandStr)
+			help = append(help, "commands")
+		}
 
 		for _, arg := range positional {
 			names = append(names, arg.GetUsage())
@@ -125,7 +204,14 @@ func (p *parser) GetHelp() string {
 			if longest > screenWidth {
 				lines = append(lines, "\n", spacer(longest))
 			}
-			lines = append(lines, help[i], "\n")
+
+			helpLines := wordWrap(help[i], screenWidth-longest)
+			lines = append(lines, helpLines[0], "\n")
+			if len(helpLines) > 1 {
+				for _, helpLine := range helpLines[1:len(helpLines)] {
+					lines = append(lines, spacer(longest), helpLine, "\n")
+				}
+			}
 		}
 		usage = append(usage, lines...)
 	}
@@ -162,84 +248,173 @@ func (p *parser) GetHelp() string {
 	return join("", usage...)
 }
 
-// Parser accepts a slice of strings as flags and arguments to be parsed. The
-// parser will call each encountered flag's action. Unexpected flags will
-// cause an error. All errors are returned.
-func (p *parser) Parse(allArgs ...string) error {
-	p.Values = make(map[string]interface{})
-	requiredFlags := make(map[string]*Flag)
+// GetVersion will return the version text for the current parser.
+func (p *Parser) GetVersion() string {
+	return p.ProgramName + " version " + p.VersionDesc
+}
 
-	for _, flag := range p.Flags {
-		if flag.IsRequired == true {
-			requiredFlags[flag.PublicName] = flag
+// Parser accepts a slice of strings as options and arguments to be parsed. The
+// parser will call each encountered option's action. Unexpected options will
+// cause an error. All errors are returned.
+func (p *Parser) Parse(allArgs ...string) {
+	if p.Namespace == nil {
+		p.Namespace = NewNamespace()
+	}
+	requiredOptions := make(map[string]*Option)
+	remainderOptions := make(map[string]*Option)
+	var err error
+
+	var optionListing []*Option
+
+	for _, option := range p.Options {
+		if option.IsRequired == true {
+			requiredOptions[option.DestName] = option
 		}
-		p.Values[flag.DestName] = flag.DefaultVal
+		p.Namespace.Set(option.DestName, option.DefaultVal)
+		if strings.ToLower(option.ArgNum) == "r" {
+			remainderOptions[option.DisplayName()] = option
+		} else {
+			optionListing = append(optionListing, option)
+		}
 	}
 
-	flagNames, args := extractFlags(allArgs...)
-	for _, flagName := range flagNames {
-		var flag *Flag
+	if len(p.Parsers) > 0 {
+		var usedParser bool
 
-		for _, f := range p.Flags {
-			if flagName == f.PublicName {
-				if _, ok := requiredFlags[flagName]; ok {
-					delete(requiredFlags, flagName)
+		for _, subParser := range p.Parsers {
+			name := subParser.Name
+			parser := subParser.Parser
+			if len(allArgs) <= 0 {
+				p.Callback(p, p.Namespace, nil, MissingParserErr{p.Parsers})
+				return
+			}
+			if allArgs[0] == name {
+				if len(allArgs) > 0 {
+					allArgs = allArgs[1:len(allArgs)]
+				} else {
+					allArgs = []string{}
 				}
-				flag = f
+
+				parser.Parse(allArgs...)
+				return
+			}
+		}
+
+		if usedParser != true {
+			p.Callback(p, p.Namespace, nil, MissingParserErr{p.Parsers})
+		}
+	}
+
+	optionNames, args := extractOptions(allArgs...)
+	for _, optionName := range optionNames {
+		var option *Option
+
+		for _, f := range p.Options {
+			if f.IsPositional == true {
+				continue
+			}
+			if f.IsPublicName(optionName) == true {
+				if _, ok := requiredOptions[f.DisplayName()]; ok {
+					delete(requiredOptions, f.DisplayName())
+				} else if _, ok := remainderOptions[f.DisplayName()]; ok {
+					continue
+				}
+				option = f
 				break
 			}
 		}
 
-		if flag == nil {
-			return fmt.Errorf("flag '%s' is not a valid flag.", flagName)
+		if option == nil {
+			p.Callback(p, p.Namespace, args, InvalidOptionErr{optionName})
 		}
 
-		_, err := flag.DesiredAction(p, flag, args...)
+		args, err = option.DesiredAction(p, option, args...)
 		if err != nil {
-			return err
+			p.Callback(p, p.Namespace, args, err)
 		}
 	}
 
-	if len(requiredFlags) != 0 {
-		for _, flag := range requiredFlags {
-			return fmt.Errorf("flag '%s' is required but was not present.", flag.DisplayName())
+	if len(args) > 0 {
+		for _, opt := range remainderOptions {
+			if _, ok := requiredOptions[opt.DisplayName()]; ok {
+				delete(requiredOptions, opt.DisplayName())
+			}
+			_, err := opt.DesiredAction(p, opt, args...)
+			if err != nil {
+				p.Callback(p, p.Namespace, args, err)
+			}
 		}
 	}
-	return nil
+
+	for _, f := range p.Options {
+		if f.IsPositional == false {
+			continue
+		}
+		if _, ok := requiredOptions[f.DestName]; ok {
+			delete(requiredOptions, f.DestName)
+		}
+		args, err = f.DesiredAction(p, f, args...)
+		if err != nil {
+			p.Callback(p, p.Namespace, args, err)
+		}
+	}
+
+	if len(requiredOptions) != 0 {
+		for _, option := range requiredOptions {
+			p.Callback(p, p.Namespace, args, MissingOptionErr{option.DisplayName()})
+		}
+	}
+	p.Callback(p, p.Namespace, args, nil)
 }
 
 // Path will set the parser's program name to the program name specified by the
 // provided path.
-func (p *parser) Path(progPath string) *parser {
+func (p *Parser) Path(progPath string) *Parser {
 	paths := strings.Split(progPath, string(os.PathSeparator))
 	return p.Prog(paths[len(paths)-1])
 }
 
 // Prog sets the name of the parser directly.
-func (p *parser) Prog(name string) *parser {
+func (p *Parser) Prog(name string) *Parser {
 	p.ProgramName = name
 	return p
 }
 
 // Usage sets the provide string as the usage/description text for the parser.
-func (p *parser) Usage(usage string) *parser {
+func (p *Parser) Usage(usage string) *Parser {
 	p.UsageText = usage
 	return p
 }
 
 // ShowHelp outputs to stdout the parser's generated help text.
-func (p *parser) ShowHelp() *parser {
+func (p *Parser) ShowHelp() *Parser {
 	fmt.Println(p.GetHelp())
 
 	return p
 }
 
+// ShowVersion outputs to stdout the parser's generated versioning text.
+func (p *Parser) ShowVersion() *Parser {
+	fmt.Println(p.GetVersion())
+
+	return p
+}
+
+// Version sets the provide string as the version text for the parser.
+func (p *Parser) Version(version string) *Parser {
+	p.VersionDesc = version
+	return p
+}
+
 // NewParser returns an instantiated pointer to a new parser instance, with
 // a description matching the provided string.
-func NewParser(desc string) *parser {
-	p := parser{UsageText: desc}
+func NewParser(desc string, callback func(*Parser, *Namespace, []string, error)) *Parser {
+	p := Parser{UsageText: desc}
+	p.Namespace = NewNamespace()
+	p.Parsers = make([]SubParser, 0)
 	if len(os.Args) >= 1 {
 		p.Path(os.Args[0])
 	}
+	p.Callback = callback
 	return &p
 }
