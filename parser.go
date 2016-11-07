@@ -302,6 +302,7 @@ func (p *Parser) Parse(allArgs ...string) {
 
 		if usedParser != true {
 			p.Callback(p, p.Namespace, nil, MissingParserErr{p.Parsers})
+			return
 		}
 	}
 
@@ -326,12 +327,12 @@ func (p *Parser) Parse(allArgs ...string) {
 
 		if option == nil {
 			p.Callback(p, p.Namespace, args, InvalidOptionErr{optionName})
+			return
 		}
 
 		args, err = option.DesiredAction(p, option, args...)
-		if err != nil {
-			p.Callback(p, p.Namespace, args, err)
-		}
+		p.Callback(p, p.Namespace, args, err)
+		return
 	}
 
 	if len(args) > 0 {
@@ -340,9 +341,8 @@ func (p *Parser) Parse(allArgs ...string) {
 				delete(requiredOptions, opt.DisplayName())
 			}
 			_, err := opt.DesiredAction(p, opt, args...)
-			if err != nil {
-				p.Callback(p, p.Namespace, args, err)
-			}
+			p.Callback(p, p.Namespace, args, err)
+			return
 		}
 	}
 
@@ -354,17 +354,18 @@ func (p *Parser) Parse(allArgs ...string) {
 			delete(requiredOptions, f.DestName)
 		}
 		args, err = f.DesiredAction(p, f, args...)
-		if err != nil {
-			p.Callback(p, p.Namespace, args, err)
-		}
+		p.Callback(p, p.Namespace, args, err)
+		return
 	}
 
 	if len(requiredOptions) != 0 {
 		for _, option := range requiredOptions {
 			p.Callback(p, p.Namespace, args, MissingOptionErr{option.DisplayName()})
+			return
 		}
 	}
 	p.Callback(p, p.Namespace, args, nil)
+	return
 }
 
 // Path will set the parser's program name to the program name specified by the
