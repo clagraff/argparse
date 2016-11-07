@@ -4,7 +4,11 @@ import (
 	"bufio"
 	"os"
 	"testing"
-) //import go package for testing related functionality
+)
+
+func emptyNamespace() func(*Parser, *Namespace, []string, error) {
+	return func(*Parser, *Namespace, []string, error) {}
+}
 
 // TestParserAddHelp tests the AddHelp method to ensure two help options
 // are appended to the parser, a short option & a long option.
@@ -97,7 +101,7 @@ func TestParserGetOption_ValidOption(t *testing.T) {
 // return a help-string containing usage information and option-dependent
 // help text.
 func TestParserGetHelp(t *testing.T) {
-	p := NewParser("this is a description of the program")
+	p := NewParser("this is a description of the program", emptyNamespace())
 
 	if len(p.GetHelp()) <= 0 {
 		t.Errorf("A non-empty string was expected but was not received")
@@ -109,7 +113,7 @@ func TestParserGetHelp(t *testing.T) {
 // TestParserGetVersion tests the GetVersion  method to ensure that the parser will
 // return a version-string containing version information of the parser.
 func TestParserGetVersion(t *testing.T) {
-	p := NewParser("some description").Version("1.0.b")
+	p := NewParser("some description", emptyNamespace()).Version("1.0.b")
 
 	if p.GetVersion() != "argparse.test version 1.0.b" {
 		t.Errorf("The retrieved version text did not match the expected string")
@@ -194,7 +198,7 @@ func TestParserShowHelp(t *testing.T) {
 	}
 	os.Stdout = writeFile
 
-	p := NewParser("this is an awesome program which does awesome things")
+	p := NewParser("this is an awesome program which does awesome things", emptyNamespace())
 	p.ShowHelp()
 
 	writeFile.Close()
@@ -221,7 +225,7 @@ func TestParserShowVersion(t *testing.T) {
 	}
 	os.Stdout = writeFile
 
-	p := NewParser("this is a program").Version("1.foo.bar.0.42 alpha")
+	p := NewParser("this is a program", emptyNamespace()).Version("1.foo.bar.0.42 alpha")
 	p.ShowVersion()
 
 	writeFile.Close()
@@ -242,7 +246,7 @@ func TestParserShowVersion(t *testing.T) {
 // is returned using the NewParser function.
 func TestNewParser(t *testing.T) {
 	desc := "this program does things."
-	p := NewParser(desc)
+	p := NewParser(desc, emptyNamespace())
 
 	if p == nil {
 		t.Error("The parser pointer cannot be null")

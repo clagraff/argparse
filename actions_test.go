@@ -6,7 +6,7 @@ import "testing"
 // return the appropriate args & error when operating upon a option with
 // one expected argument.
 func TestStore_OneNargs(t *testing.T) {
-	p := NewParser("parser")
+	p := NewParser("parser", emptyNamespace())
 	f := NewOption("option", "option", "option").Nargs("1")
 	args := []string{"foobar"}
 
@@ -25,7 +25,7 @@ func TestStore_OneNargs(t *testing.T) {
 	}
 
 	args = []string{}
-	_, err = Store(p, f, args...)
+	_, err = Store(p, f.Required(), args...)
 	if err == nil {
 		t.Error("An error was expected but did not occurr")
 	}
@@ -35,7 +35,7 @@ func TestStore_OneNargs(t *testing.T) {
 // return the appropriate args & error when operating upon a option with
 // three  expected arguments.
 func TestStore_ThreeNargs(t *testing.T) {
-	p := NewParser("parser")
+	p := NewParser("parser", emptyNamespace())
 	f := NewOption("option", "option", "option").Nargs("3")
 	args := []string{"foo", "bar", "fizzbuzz"}
 
@@ -54,7 +54,7 @@ func TestStore_ThreeNargs(t *testing.T) {
 	}
 
 	args = []string{}
-	_, err = Store(p, f, args...)
+	_, err = Store(p, f.Required(), args...)
 	if err == nil {
 		t.Error("An error was expected but did not occurr")
 	}
@@ -64,7 +64,7 @@ func TestStore_ThreeNargs(t *testing.T) {
 // return the appropriate args & error when operating upon a option with
 // any number of expected arguments.
 func TestStore_AnyNargs(t *testing.T) {
-	p := NewParser("parser")
+	p := NewParser("parser", emptyNamespace())
 	f := NewOption("option", "option", "option").Nargs("*")
 	args := []string{"foo", "bar", "fizz", "buzz", "hello", "world"}
 
@@ -93,7 +93,7 @@ func TestStore_AnyNargs(t *testing.T) {
 // return the appropriate args & error when operating upon a option with
 // at least one number of expected arguments.
 func TestStore_LeastOneNargs(t *testing.T) {
-	p := NewParser("parser")
+	p := NewParser("parser", emptyNamespace())
 	f := NewOption("option", "option", "option").Nargs("+")
 	args := []string{"foo", "fizz", "world"}
 
@@ -120,7 +120,7 @@ func TestStore_LeastOneNargs(t *testing.T) {
 
 // TestStoreConst tests the StoreConst Action will store a option's ConstValue.
 func TestStoreConst(t *testing.T) {
-	p := NewParser("parser")
+	p := NewParser("parser", emptyNamespace())
 	f := NewOption("option", "option", "option").Nargs("0").Const("hello world")
 	args := []string{}
 
@@ -141,7 +141,7 @@ func TestStoreConst(t *testing.T) {
 
 // TestStoreFalse tests the StoreFalse Action will store a false boolean.
 func TestStoreFalse(t *testing.T) {
-	p := NewParser("parser")
+	p := NewParser("parser", emptyNamespace())
 	f := NewOption("option", "option", "option").Nargs("0")
 	args := []string{}
 
@@ -162,7 +162,7 @@ func TestStoreFalse(t *testing.T) {
 
 // TestStoreTrue tests the StoreFalse Action will store a true boolean.
 func TestStoreTrue(t *testing.T) {
-	p := NewParser("parser")
+	p := NewParser("parser", emptyNamespace())
 	f := NewOption("option", "option", "option").Nargs("0")
 	args := []string{}
 
@@ -185,7 +185,7 @@ func TestStoreTrue(t *testing.T) {
 // return the appropriate args & error when operating upon a option with
 // one expected argument.
 func TestAppend_OneNargs(t *testing.T) {
-	p := NewParser("parser")
+	p := NewParser("parser", emptyNamespace())
 	f := NewOption("option", "option", "option").Nargs("1")
 	args := []string{"foobar"}
 
@@ -214,7 +214,7 @@ func TestAppend_OneNargs(t *testing.T) {
 // return the appropriate args & error when operating upon a option with
 // three  expected arguments.
 func TestAppend_ThreeNargs(t *testing.T) {
-	p := NewParser("parser")
+	p := NewParser("parser", emptyNamespace())
 	f := NewOption("option", "option", "option").Nargs("3")
 	args := []string{"foo", "bar", "fizzbuzz"}
 
@@ -243,7 +243,7 @@ func TestAppend_ThreeNargs(t *testing.T) {
 // return the appropriate args & error when operating upon a option with
 // any number of expected arguments.
 func TestAppend_AnyNargs(t *testing.T) {
-	p := NewParser("parser")
+	p := NewParser("parser", emptyNamespace())
 	f := NewOption("option", "option", "option").Nargs("*")
 	args := []string{"foo", "bar", "fizz", "buzz", "hello", "world"}
 
@@ -272,7 +272,7 @@ func TestAppend_AnyNargs(t *testing.T) {
 // return the appropriate args & error when operating upon a option with
 // at least one number of expected arguments.
 func TestAppend_LeastOneNargs(t *testing.T) {
-	p := NewParser("parser")
+	p := NewParser("parser", emptyNamespace())
 	f := NewOption("option", "option", "option").Nargs("+")
 	args := []string{"foo", "fizz", "world"}
 
