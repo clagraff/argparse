@@ -104,14 +104,14 @@ func (err MissingOneOrMoreArgsErr) Error() string {
 
 // MissingParserErr indicated that commands were available, but none were used.
 type MissingParserErr struct {
-	Parsers map[string]*Parser
+	Parsers []SubParser
 }
 
 // Error will return a string error message for the MissingParserErr
 func (err MissingParserErr) Error() string {
 	var names []string
-	for name, _ := range err.Parsers {
-		names = append(names, name)
+	for _, subP := range err.Parsers {
+		names = append(names, subP.Name)
 	}
 	msg := "must use an available command: %s"
 	return fmt.Sprintf(msg, join("", "{", join(",", names...), "}"))

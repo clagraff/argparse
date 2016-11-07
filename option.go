@@ -11,7 +11,7 @@ import (
 // to StoreTrue, and its default value to false.
 func NewFlag(names, dest, help string) *Option {
 	opt := NewOption(names, dest, help)
-	opt.Nargs("0").Action(StoreTrue).Default("false")
+	opt.Nargs("0").Action(StoreTrue).Default("false").NotRequired()
 
 	return opt
 }
