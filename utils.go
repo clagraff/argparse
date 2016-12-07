@@ -69,7 +69,7 @@ func getEnvVar(name string) (string, error) {
 // getScreenWidth returns the width of the screen the program is executed within.
 func getScreenWidth() int {
 	if err := termbox.Init(); err != nil {
-		panic(err) // TODO: This should really be made to return an error.
+		return 80
 	}
 	w, _ := termbox.Size()
 	termbox.Close()
