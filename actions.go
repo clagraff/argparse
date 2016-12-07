@@ -155,7 +155,15 @@ func Append(p *Parser, f *Option, args ...string) ([]string, error) {
 		}
 		return args, nil
 	} else if f.ArgNum == "0" {
-		appendValue(p, f, f.DefaultVal)
+		if isEnvVarFormat(f.DefaultVal) == true {
+			if defVal, err := getEnvVar(f.DefaultVal); err != nil {
+				return args, err
+			} else {
+				appendValue(p, f, defVal)
+			}
+		} else {
+			appendValue(p, f, f.DefaultVal)
+		}
 		return args, nil
 	} else if f.ArgNum == "?" {
 		if len(args) > 0 {
@@ -167,7 +175,15 @@ func Append(p *Parser, f *Option, args ...string) ([]string, error) {
 			appendValue(p, f, args[0])
 			args = args[1:]
 		} else {
-			appendValue(p, f, f.DefaultVal)
+			if isEnvVarFormat(f.DefaultVal) == true {
+				if defVal, err := getEnvVar(f.DefaultVal); err != nil {
+					return args, err
+				} else {
+					appendValue(p, f, defVal)
+				}
+			} else {
+				appendValue(p, f, f.DefaultVal)
+			}
 		}
 	} else if strings.ContainsAny(f.ArgNum, "*+rR") == true {
 		if f.ArgNum == "+" && len(args) == 0 {
