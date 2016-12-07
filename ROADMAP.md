@@ -36,9 +36,9 @@ argparse packaged are included.
     - [ ] Determine & display conflicting options
     - [x] Parse multiple short-arguments in single argument flag
     - [x] Parse from sys.Args by default
-    - [ ] Support sub-parsers / commands
+    - [x] Support sub-parsers / commands
 - [ ] Argument
-    - [ ] Support ARgument attribute functionallity
+    - [x] Support Argument attribute functionallity
         - [x] name
         - [x] action
         - [x] nargs
@@ -52,15 +52,14 @@ argparse packaged are included.
         - [x] dest
     - [x] Support short & long named options
     - [x] Associate short & long named options as single option
-    - [ ] Support Nargs options
+    - [x] Support Nargs options
         - [x] Any positive integer
         - [x] "?" - One argument or none
         - [x] "*" - Any arguments or none
         - [x] "+" - One or more arguments
-        - [ ] "rR" - Remaining arguments
+        - [x] "rR" - Remaining arguments
     - [x] Support argument type-asserting
     - [x] Support limiting to available argument Choices
-    - [ ] Derive Dest attribute from public name
     - [ ] Allow for mutually-exclusive arguments
     - [ ] Provide validity checking for Option based on provided arguments
 - [x] Namespace
@@ -77,7 +76,6 @@ argparse packaged are included.
     - [x] version
 - [ ] Project / General milestones
     - [ ] Documentation / examples
-    - [ ] Unit tests
-        - [ ] Unit testing using Testify package
+    - [x] Unit tests
     - [X] Strong code coverage
     - [X] Comprehensive & cohesive error messages

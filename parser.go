@@ -266,18 +266,6 @@ func (p *Parser) Parse(allArgs ...string) {
 
 	var optionListing []*Option
 
-	for _, option := range p.Options {
-		if option.IsRequired == true {
-			requiredOptions[option.DestName] = option
-		}
-		p.Namespace.Set(option.DestName, option.DefaultVal)
-		if strings.ToLower(option.ArgNum) == "r" {
-			remainderOptions[option.DisplayName()] = option
-		} else {
-			optionListing = append(optionListing, option)
-		}
-	}
-
 	if len(p.Parsers) > 0 {
 		var usedParser bool
 
@@ -303,6 +291,28 @@ func (p *Parser) Parse(allArgs ...string) {
 		if usedParser != true {
 			p.Callback(p, p.Namespace, nil, MissingParserErr{p.Parsers})
 			return
+		}
+	}
+
+	for _, option := range p.Options {
+		if option.IsRequired == true {
+			requiredOptions[option.DestName] = option
+		}
+
+		if isEnvVarFormat(option.DefaultVal) == true {
+			defVal, err := getEnvVar(option.DefaultVal)
+			if err != nil {
+				p.Callback(p, p.Namespace, allArgs, err)
+				return
+			}
+			p.Namespace.Set(option.DestName, defVal)
+		} else {
+			p.Namespace.Set(option.DestName, option.DefaultVal)
+		}
+		if strings.ToLower(option.ArgNum) == "r" {
+			remainderOptions[option.DisplayName()] = option
+		} else {
+			optionListing = append(optionListing, option)
 		}
 	}
 

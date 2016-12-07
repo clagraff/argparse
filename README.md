@@ -1,6 +1,6 @@
 # argparse
 ## Project Status
-[ ![Codeship Status for clagraff/argparse](https://codeship.com/projects/68eb7800-af6b-0133-1b97-3e80188314d9/status?branch=master)](https://codeship.com/projects/132507)
+[![CircleCI](https://circleci.com/gh/clagraff/argparse/tree/develop.svg?style=svg)](https://circleci.com/gh/clagraff/argparse/tree/develop)
 [![GoDoc](https://godoc.org/github.com/clagraff/argparse?status.svg)](https://godoc.org/github.com/clagraff/argparse)
 
 ## Description

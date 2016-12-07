@@ -1,6 +1,7 @@
 package argparse
 
 import (
+	"os"
 	"strings"
 	"testing" //import go package for testing related functionality
 )
@@ -108,6 +109,36 @@ func TestExtractOptions(t *testing.T) {
 	}
 }
 
+// TestGetEnvVar tests to ensure that we can grab the value of a specified
+// environmental variable if it exists, or otherwise error out.
+func TestGetEnvVar(t *testing.T) {
+	key := "FAKE_EXIST_ENV_VAR_1337"
+	val := "value choosen at random"
+	if err := os.Setenv(key, val); err != nil {
+		t.Fatal(err)
+	}
+
+	if str, err := getEnvVar("$" + key); err != nil {
+		t.Errorf(
+			"no error was expected, but an error was returned: %s",
+			err.Error(),
+		)
+	} else {
+		if str != val {
+			t.Errorf(
+				"\"%s\" expected value does not match returned value \"%s\"",
+				val,
+				str,
+			)
+		}
+	}
+
+	key = "FAKE_DOES_NOT_EXIST"
+	if _, err := getEnvVar("$" + key); err == nil {
+		t.Error("An error was expected, but no errors were returned")
+	}
+}
+
 // TestGetScreenWidth tests to ensure that a positive, non-zero integer value is returned
 // to represent the width of the current screen.
 func TestGetScreenWidth(t *testing.T) {
@@ -117,6 +148,42 @@ func TestGetScreenWidth(t *testing.T) {
 	width := getScreenWidth()
 	if width <= 0 {
 		t.Error("Retrieved screen width should be a positive, non-zero integer")
+	}
+}
+
+// TestIsEnvVarFormat is a table-test to ensure that isEnvVarFormat will
+// return the expected result for a given slice of inputs representing
+// possible environmental names.
+func TestIsEnvVarFormat(t *testing.T) {
+	table := map[string]bool{
+		"":                          false,
+		"$":                         false,
+		"$0":                        false,
+		"0":                         false,
+		"_":                         false,
+		"abc":                       false,
+		"DEF":                       false,
+		"VAR$":                      false,
+		"$TEST":                     true,
+		"$abc":                      true,
+		"$FOO_BAR":                  true,
+		"$_":                        true,
+		"$LEET_1337":                true,
+		"$z28":                      true,
+		"$one_222_THREE":            true,
+		"$MANY_______und3rscor3s__": true,
+	}
+
+	for testStr, expectedBool := range table {
+		result := isEnvVarFormat(testStr)
+		if result != expectedBool {
+			t.Errorf(
+				"envVarFormat expected the string \"%s\" to return: %t, but got %t instead",
+				testStr,
+				expectedBool,
+				result,
+			)
+		}
 	}
 }
 

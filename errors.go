@@ -69,6 +69,18 @@ func (err InvalidTypeErr) Error() string {
 	return fmt.Sprintf(msg, err.opt.DisplayName(), err.opt.ExpectedType.String(), err.arg)
 }
 
+// MissingEnvVarErr indicates that an environmental variable could not be found
+// with the provided variable name.
+type MissingEnvVarErr struct {
+	varName string
+}
+
+// Error will return a string error message for the MissingEnvVarErr.
+func (err MissingEnvVarErr) Error() string {
+	msg := "missing environmental variable \"%s\""
+	return fmt.Sprintf(msg, err.varName)
+}
+
 // ShowHelpErr indicates that the program was instructed to show it's help text.
 type ShowHelpErr struct{}
 

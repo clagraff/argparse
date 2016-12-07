@@ -2,6 +2,7 @@ package argparse
 
 import (
 	"bytes"
+	"os"
 	"regexp"
 	"strings"
 
@@ -54,15 +55,41 @@ func extractOptions(allArgs ...string) (options, args []string) {
 	return options, args
 }
 
+// getEnvVar will attempt to retrieve the value of the environmental
+// variable by the provided name. If the variable cannot be found, an
+// error is returned.
+func getEnvVar(name string) (string, error) {
+	val, found := os.LookupEnv(name[1:])
+	if found != true {
+		return "", MissingEnvVarErr{name}
+	}
+	return val, nil
+}
+
 // getScreenWidth returns the width of the screen the program is executed within.
 func getScreenWidth() int {
 	if err := termbox.Init(); err != nil {
-		panic(err) // TODO: This should really be made to return an error.
+		return 80
 	}
 	w, _ := termbox.Size()
 	termbox.Close()
 
 	return w
+}
+
+// envVarPattern allows for env variable names that begin with a `$`, and
+// is preceeded by any combination of letters, numbers, or underscores (as
+// long as the first character is a letter).
+var envVarPattern string = `^\$[A-Za-z_][0-9A-Za-z_]*$`
+var envVarRegex *regexp.Regexp = regexp.MustCompile(envVarPattern)
+
+// isEnvVarFormat takes a string and checks if it matches the format
+// of an environmental variable.
+func isEnvVarFormat(text string) bool {
+	if len(text) == 0 || (text[0] != '$' || len(text) == 1) {
+		return false
+	}
+	return envVarRegex.Match([]byte(text))
 }
 
 // join will join the provided strings by the specified delimiter. The delimiter
