@@ -14,14 +14,15 @@ type SubParser struct {
 // Parser contains program-level settings and information, stores options,
 // and values collected upon parsing.
 type Parser struct {
-	Callback    func(*Parser, *Namespace, []string, error)
-	ProgramName string
 	AllowAbbrev bool
+	Callback    func(*Parser, *Namespace, []string, error)
+	EpilogText  string
+	Namespace   *Namespace
 	Options     []*Option
 	Parsers     []SubParser
+	ProgramName string
 	UsageText   string
 	VersionDesc string
-	Namespace   *Namespace
 }
 
 // AddHelp adds a new option to output usage information for the current parser
@@ -245,6 +246,10 @@ func (p *Parser) GetHelp() string {
 		usage = append(usage, lines...)
 	}
 
+	if len(p.EpilogText) > 0 {
+		usage = append(usage, "\n", p.EpilogText)
+	}
+
 	return join("", usage...)
 }
 
@@ -388,6 +393,13 @@ func (p *Parser) Path(progPath string) *Parser {
 // Prog sets the name of the parser directly.
 func (p *Parser) Prog(name string) *Parser {
 	p.ProgramName = name
+	return p
+}
+
+// Epilog sets the provide string as the epilog text for the parser. This text
+// is displayed during the help text, after all available text is outputted.
+func (p *Parser) Epilog(text string) *Parser {
+	p.EpilogText = text
 	return p
 }
 
