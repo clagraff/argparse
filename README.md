@@ -3,12 +3,26 @@
 [![CircleCI](https://circleci.com/gh/clagraff/argparse/tree/develop.svg?style=svg)](https://circleci.com/gh/clagraff/argparse/tree/develop)
 [![GoDoc](https://godoc.org/github.com/clagraff/argparse?status.svg)](https://godoc.org/github.com/clagraff/argparse)
 
+## Contents
+- [Description](#description)
+- [Install](#install)
+
 ## Description
-A Golang flag & argument parser for program arguments. The goal of argparse (program-arguments) is to emulate the usability and functionallity of Python's [argparse](https://docs.python.org/dev/howto/argparse.html#the-basics) package, where setting up a parser and arguments is both easy and trivial.
+_clagraff/argparse_ is a golang library for command-line argument parsing. It 
+is heavily influenced by the functionallity found in Python3's 
+[argparse](https://docs.python.org/3.6/library/argparse.html) package.
 
-# Install
-Installing is simple, as with most other Golang packages:
+_clagraff/argparse_ places a focus on method-chaining for setting up options, 
+flags, and parsers, and supports a variety of features.
 
+
+## Install
+Stable V1.x.x version
+```bash
+go get gopkg.in/clagraff/argparse.v1
+```
+
+Development version
 ```bash
 $ go get github.com/clagraff/argparse
 ```
