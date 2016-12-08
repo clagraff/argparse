@@ -168,6 +168,26 @@ func TestParserProg(t *testing.T) {
 	}
 }
 
+// TestParserEpilog tests the Epilog method to ensure that providing a epilog string
+// will result in updating the parser's epilog string.
+func TestParserEpilog(t *testing.T) {
+	epilog := "this is a random epilog"
+
+	p := Parser{}
+	if len(p.EpilogText) != 0 {
+		t.Errorf("Parser EpilogText should be an empty string, but is: %s", p.EpilogText)
+	}
+
+	p.Epilog(epilog)
+	if p.EpilogText != epilog {
+		t.Errorf(
+			"The parser's EpilogText '%s' does not match the expected string: '%s'",
+			p.EpilogText,
+			epilog,
+		)
+	}
+}
+
 // TestParserUsage tests the Usage method to ensure that providing a usage string
 // will result in updating the parser's usage string.
 func TestParserUsage(t *testing.T) {
