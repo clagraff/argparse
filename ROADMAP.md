@@ -18,17 +18,12 @@ argparse packaged are included.
 - [ ] Parser
     - [ ] Support ArgumentParser attribute functionallity
         - [x] prog
-        - [ ] usage
+        - [x] usage
         - [x] description
-        - [ ] epilog
-        - [ ] parents
-        - [ ] formatter_class
-        - [ ] prefix_chars
-        - [ ] fromfile_prefix_chars
+        - [x] epilog
         - [ ] argument_default
         - [ ] conflict_handler
         - [ ] add_help
-        - [ ] allow_abbrev
     - [x] Auto-determine Program name
     - [x] Output entire program usage
     - [ ] Support parent parsers

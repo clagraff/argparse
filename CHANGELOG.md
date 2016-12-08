@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/)
 ### Added
 - Added support for using environmental variable values for the default value
 of options.
+- Parsers can have epilog text, which is a string that can be displayed at the 
+end of parser help-text.
 
 ### Changed
 - Changed the CHANGELOG.md format.
