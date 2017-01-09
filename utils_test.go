@@ -191,9 +191,9 @@ func TestIsEnvVarFormat(t *testing.T) {
 // correct, expected manner.
 func TestJoin(t *testing.T) {
 	testStrings := [][]string{
-		[]string{"one", "two"},
-		[]string{""},
-		[]string{"three", "four", "five"},
+		{"one", "two"},
+		{""},
+		{"three", "four", "five"},
 	}
 
 	expectedStrings := []string{
