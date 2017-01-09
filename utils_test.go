@@ -113,7 +113,7 @@ func TestExtractOptions(t *testing.T) {
 // environmental variable if it exists, or otherwise error out.
 func TestGetEnvVar(t *testing.T) {
 	key := "FAKE_EXIST_ENV_VAR_1337"
-	val := "value choosen at random"
+	val := "value chosen at random"
 	if err := os.Setenv(key, val); err != nil {
 		t.Fatal(err)
 	}

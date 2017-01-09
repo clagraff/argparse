@@ -90,7 +90,7 @@ func NewOption(names, dest, help string) *Option {
 // Option contains the necessary attributes for representing a parsable option.
 // You can create a vanilla Option by using the NewOption function, or you can
 // create Flag-type or Argument-type Option using the NewFlag and NewArg functions,
-// respectivly.
+// respectively.
 //
 // An example of using these functions can be seen below:
 //
@@ -122,10 +122,7 @@ func (f *Option) Action(action Action) *Option {
 
 // Choices appends the provided slice as acceptable arguments for the option.
 func (f *Option) Choices(choices ...string) *Option {
-	f.ValidChoices = []string{}
-	for _, choice := range choices {
-		f.ValidChoices = append(f.ValidChoices, choice)
-	}
+	f.ValidChoices = choices
 	return f
 }
 
@@ -156,7 +153,7 @@ func (f *Option) DisplayName() string {
 	getDisplayName := func(name string) string {
 		var prefix string
 
-		if f.IsPositional == false {
+		if !f.IsPositional {
 			if len(name) == 1 {
 				prefix = "-"
 			} else if len(name) > 1 {
@@ -175,7 +172,7 @@ func (f *Option) DisplayName() string {
 	return strings.Join(names, ", ")
 }
 
-// GetChoices returns a string-representation of the valid chocies for the
+// GetChoices returns a string-representation of the valid choices for the
 // current Option.
 func (f *Option) GetChoices() string {
 	if len(f.ValidChoices) == 0 {
@@ -196,7 +193,7 @@ func (f *Option) GetUsage() string {
 	var usage []string
 
 	isRequired := f.IsRequired
-	if isRequired == false {
+	if !isRequired {
 		usage = append(usage, "[")
 	}
 
@@ -217,7 +214,7 @@ func (f *Option) GetUsage() string {
 		f.MetaVarText = []string{choices}
 	}
 
-	if strings.ContainsAny(f.ArgNum, "?*+rR") == false {
+	if !strings.ContainsAny(f.ArgNum, "?*+rR") {
 		count := 0
 		max, err := strconv.Atoi(f.ArgNum)
 		if err != nil {
@@ -289,7 +286,7 @@ func (f *Option) GetUsage() string {
 		}
 	}
 
-	if isRequired == false {
+	if !isRequired {
 		usage = append(usage, "]")
 	}
 
@@ -302,6 +299,8 @@ func (f *Option) Help(text string) *Option {
 	return f
 }
 
+// IsPublicName will check the provided string against current option's
+// public names to determine if there is a match.
 func (f *Option) IsPublicName(name string) bool {
 	for _, opName := range f.PublicNames {
 		if name == opName {
@@ -316,9 +315,7 @@ func (f *Option) IsPublicName(name string) bool {
 // expected argument.
 func (f *Option) MetaVar(meta string, metaSlice ...string) *Option {
 	s := []string{meta}
-	for _, text := range metaSlice {
-		s = append(s, text)
-	}
+	s = append(s, metaSlice...)
 
 	f.MetaVarText = s
 	return f
@@ -326,7 +323,7 @@ func (f *Option) MetaVar(meta string, metaSlice ...string) *Option {
 
 // Nargs sets the option's number of expected arguments. Integers represent
 // the absolute number of arguments to be expected. The `?` character represents
-// an expection of zero or one arguments. The `*` character represents an expectation
+// an expectation of zero or one arguments. The `*` character represents an expectation
 // of any number or arguments. The `+` character represents an expectation of one
 // or more arguments. The `r` and `R` characters represent using all arguments
 // not used after the initial parsing of options.
