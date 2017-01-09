@@ -250,7 +250,7 @@ func TestOptionNargs(t *testing.T) {
 func TestOptionNotRequired(t *testing.T) {
 	f := Option{}
 
-	if !f.IsRequired {
+	if f.IsRequired {
 		t.Error("Option IsRequired should be false upon initialization")
 	}
 
@@ -269,7 +269,7 @@ func TestOptionNotRequired(t *testing.T) {
 func TestOptionNotPositional(t *testing.T) {
 	f := Option{}
 
-	if !f.IsPositional {
+	if f.IsPositional {
 		t.Error("Option IsPositional should be false upon initialization")
 	}
 
@@ -288,7 +288,7 @@ func TestOptionNotPositional(t *testing.T) {
 func TestOptionPositional(t *testing.T) {
 	f := Option{}
 
-	if !f.IsPositional {
+	if f.IsPositional {
 		t.Error("Option IsPositional should be false upon initialization")
 	}
 
@@ -305,7 +305,7 @@ func TestOptionPositional(t *testing.T) {
 func TestOptionRequired(t *testing.T) {
 	f := Option{}
 
-	if !f.IsRequired {
+	if f.IsRequired {
 		t.Error("Option IsRequired should be false upon initialization")
 	}
 
