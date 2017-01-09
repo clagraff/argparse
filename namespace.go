@@ -10,7 +10,7 @@ type Namespace map[string]interface{}
 // Get will retrieve either a string or a []string if the specified key
 // exists in the mapping. Otherwise, an empty string is returned
 func (n Namespace) Get(key string) interface{} {
-	if n.KeyExists(key) != true {
+	if !n.KeyExists(key) {
 		return nil
 	}
 
@@ -20,28 +20,16 @@ func (n Namespace) Get(key string) interface{} {
 // KeyExists returns a bool indicating true if the key does exist in the mapping,
 // or otherwise false.
 func (n Namespace) KeyExists(key string) bool {
-	if _, ok := n[key]; ok == true {
+	if _, ok := n[key]; ok {
 		return true
 	}
 	return false
 }
 
-// merge will take all the values from the other, provided Namespace and copy
-// them to the current Namespace.
-func (n *Namespace) merge(other *Namespace) {
-	if other == nil {
-		return
-	}
-
-	for key, value := range *other {
-		(*n)[key] = value
-	}
-}
-
 // Require will assert that all the specified keys exist in the namespace.
 func (n Namespace) Require(keys ...string) error {
 	for _, key := range keys {
-		if n.KeyExists(key) != true {
+		if !n.KeyExists(key) {
 			return fmt.Errorf("Missing option: %s", key)
 		}
 	}
@@ -61,7 +49,7 @@ func (n *Namespace) Set(key string, value interface{}) *Namespace {
 // Slice will retrieve either a string or a []string if the specified key
 // exists in the mapping. Otherwise, an empty string is returned
 func (n Namespace) Slice(key string) []string {
-	if n.KeyExists(key) != true {
+	if !n.KeyExists(key) {
 		return nil
 	}
 
@@ -72,7 +60,7 @@ func (n Namespace) Slice(key string) []string {
 // String will retrieve either a string or a []string if the specified key
 // exists in the mapping. Otherwise, an empty string is returned
 func (n Namespace) String(key string) string {
-	if n.KeyExists(key) != true {
+	if !n.KeyExists(key) {
 		return ""
 	}
 
@@ -82,14 +70,14 @@ func (n Namespace) String(key string) string {
 // Try will retrieve either a string or a []string if the specified key
 // exists in the mapping. Otherwise, an error is returned.
 func (n Namespace) Try(key string) (interface{}, error) {
-	if n.KeyExists(key) != true {
+	if !n.KeyExists(key) {
 		return nil, fmt.Errorf("Key \"%s\" does not exist in namespace", key)
 	}
 
 	return n[key], nil
 }
 
-// Create a new pointer to an Namespace instance.
+// NewNamespace will return a pointer to a new Namespace instance.
 func NewNamespace() *Namespace {
 	n := Namespace(make(map[string]interface{}))
 	return &n

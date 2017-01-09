@@ -1,4 +1,4 @@
-// argparse is a Golang command line argument parsing library, taking heavy influance from Python's argparse module.
+// Package argparse is a Golang command line argument parsing library, taking heavy influance from Python's argparse module.
 //
 // Using argparse, it is possible to easily create command-line interfaces, such
 // as:

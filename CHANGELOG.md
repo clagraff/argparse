@@ -14,6 +14,10 @@ end of parser help-text.
 ### Changed
 - Changed the CHANGELOG.md format.
 - Changed the type of a Namespace from a struct to a `map[string]interface{}`.
+- Updated main README.md to include proper links for getting this package by 
+stable or develoment versions.
+- Fixing vetting issues in the codebase, including simplifying the code, adding
+comments, and formatting issues.
 
 ## [v1.0.1]
 ## Fixed 

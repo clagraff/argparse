@@ -113,7 +113,7 @@ func TestExtractOptions(t *testing.T) {
 // environmental variable if it exists, or otherwise error out.
 func TestGetEnvVar(t *testing.T) {
 	key := "FAKE_EXIST_ENV_VAR_1337"
-	val := "value choosen at random"
+	val := "value chosen at random"
 	if err := os.Setenv(key, val); err != nil {
 		t.Fatal(err)
 	}
@@ -191,9 +191,9 @@ func TestIsEnvVarFormat(t *testing.T) {
 // correct, expected manner.
 func TestJoin(t *testing.T) {
 	testStrings := [][]string{
-		[]string{"one", "two"},
-		[]string{""},
-		[]string{"three", "four", "five"},
+		{"one", "two"},
+		{""},
+		{"three", "four", "five"},
 	}
 
 	expectedStrings := []string{

@@ -67,7 +67,7 @@ func TestParserGetOption_InvalidOption(t *testing.T) {
 	}
 
 	if f != nil {
-		t.Error("The retrived option was not nil")
+		t.Error("The retrieved option was not nil")
 	}
 }
 
@@ -91,7 +91,7 @@ func TestParserGetOption_ValidOption(t *testing.T) {
 	}
 
 	if f == nil {
-		t.Error("The retrived option cannot be nil")
+		t.Error("The retrieved option cannot be nil")
 	} else if f.PublicNames[0] != "second" {
 		t.Errorf("Expected option name 'second', but retrieved name: %s", f.PublicNames)
 	}
@@ -273,6 +273,6 @@ func TestNewParser(t *testing.T) {
 	}
 
 	if p.UsageText != desc {
-		t.Error("The parser's usage text: '%s' does not match the expected description: '%s'", p.UsageText, desc)
+		t.Errorf("The parser's usage text: '%s' does not match the expected description: '%s'", p.UsageText, desc)
 	}
 }

@@ -27,7 +27,7 @@ func TestStore_OneNargs(t *testing.T) {
 	args = []string{}
 	_, err = Store(p, f.Required(), args...)
 	if err == nil {
-		t.Error("An error was expected but did not occurr")
+		t.Error("An error was expected but did not occur")
 	}
 }
 
@@ -56,7 +56,7 @@ func TestStore_ThreeNargs(t *testing.T) {
 	args = []string{}
 	_, err = Store(p, f.Required(), args...)
 	if err == nil {
-		t.Error("An error was expected but did not occurr")
+		t.Error("An error was expected but did not occur")
 	}
 }
 
@@ -206,7 +206,7 @@ func TestAppend_OneNargs(t *testing.T) {
 	args = []string{}
 	_, err = Append(p, f, args...)
 	if err == nil {
-		t.Error("An error was expected but did not occurr")
+		t.Error("An error was expected but did not occur")
 	}
 }
 
@@ -235,7 +235,7 @@ func TestAppend_ThreeNargs(t *testing.T) {
 	args = []string{}
 	_, err = Append(p, f, args...)
 	if err == nil {
-		t.Error("An error was expected but did not occurr")
+		t.Error("An error was expected but did not occur")
 	}
 }
 

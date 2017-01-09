@@ -2,6 +2,7 @@
 ## Project Status
 [![CircleCI](https://circleci.com/gh/clagraff/argparse/tree/develop.svg?style=svg)](https://circleci.com/gh/clagraff/argparse/tree/develop)
 [![GoDoc](https://godoc.org/github.com/clagraff/argparse?status.svg)](https://godoc.org/github.com/clagraff/argparse)
+[![Go Report Card](http://goreportcard.com/badge/clagraff/argparse)](http://goreportcard.com/report/clagraff/argparse)
 
 ## Contents
 - [Description](#description)

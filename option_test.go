@@ -92,7 +92,7 @@ func TestOptionAction(t *testing.T) {
 	}
 }
 
-// TestOptionChoices tests that the Choices method will set a Options avaliable choices
+// TestOptionChoices tests that the Choices method will set a Options available choices
 // to the provided []interface{}.
 func TestOptionChoices(t *testing.T) {
 	f := Option{}
@@ -143,7 +143,7 @@ func TestOptionDefault(t *testing.T) {
 }
 
 // TestOptionDisplayName tests the retrival of a option's display name, with an
-// appropriate number of preceeding hypens, via the DisplayName method.
+// appropriate number of preceding hypens, via the DisplayName method.
 func TestOptionDisplayName(t *testing.T) {
 	f := Option{}
 
@@ -250,7 +250,7 @@ func TestOptionNargs(t *testing.T) {
 func TestOptionNotRequired(t *testing.T) {
 	f := Option{}
 
-	if f.IsRequired != false {
+	if f.IsRequired {
 		t.Error("Option IsRequired should be false upon initialization")
 	}
 
@@ -269,7 +269,7 @@ func TestOptionNotRequired(t *testing.T) {
 func TestOptionNotPositional(t *testing.T) {
 	f := Option{}
 
-	if f.IsPositional != false {
+	if f.IsPositional {
 		t.Error("Option IsPositional should be false upon initialization")
 	}
 
@@ -288,7 +288,7 @@ func TestOptionNotPositional(t *testing.T) {
 func TestOptionPositional(t *testing.T) {
 	f := Option{}
 
-	if f.IsPositional != false {
+	if f.IsPositional {
 		t.Error("Option IsPositional should be false upon initialization")
 	}
 
@@ -305,7 +305,7 @@ func TestOptionPositional(t *testing.T) {
 func TestOptionRequired(t *testing.T) {
 	f := Option{}
 
-	if f.IsRequired != false {
+	if f.IsRequired {
 		t.Error("Option IsRequired should be false upon initialization")
 	}
 

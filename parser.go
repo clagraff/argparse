@@ -6,6 +6,7 @@ import (
 	"strings"
 )
 
+// SubParser contains a Parser pointer and the public name for the sub command.
 type SubParser struct {
 	Parser *Parser
 	Name   string
@@ -50,9 +51,7 @@ func (p *Parser) AddOption(f *Option) *Parser {
 
 // AddOptions appends the provided options to the current parser.
 func (p *Parser) AddOptions(opts ...*Option) *Parser {
-	for _, opt := range opts {
-		p.Options = append(p.Options, opt)
-	}
+	p.Options = append(p.Options, opts...)
 	return p
 }
 
@@ -72,7 +71,7 @@ func (p *Parser) GetOption(name string) (*Option, error) {
 		return nil, InvalidFlagNameErr{name}
 	}
 	for _, option := range p.Options {
-		if option.IsPublicName(name) == true {
+		if option.IsPublicName(name) {
 			return option, nil
 		}
 	}
@@ -97,7 +96,7 @@ func (p Parser) GetParser(name string) (*Parser, error) {
 }
 
 // GetHelp returns a string containing the parser's description text,
-// and the usage information for each option currently incorperated within
+// and the usage information for each option currently incorporated within
 // the parser.
 func (p *Parser) GetHelp() string {
 	// Get screen width to determine max line lengths later.
@@ -118,7 +117,7 @@ func (p *Parser) GetHelp() string {
 	longest := 0
 
 	for _, arg := range p.Options {
-		if arg.IsPositional == false {
+		if !arg.IsPositional {
 			notPositional = append(notPositional, arg)
 		} else {
 			positional = append(positional, arg)
@@ -209,7 +208,7 @@ func (p *Parser) GetHelp() string {
 			helpLines := wordWrap(help[i], screenWidth-longest)
 			lines = append(lines, helpLines[0], "\n")
 			if len(helpLines) > 1 {
-				for _, helpLine := range helpLines[1:len(helpLines)] {
+				for _, helpLine := range helpLines[1:] {
 					lines = append(lines, spacer(longest), helpLine, "\n")
 				}
 			}
@@ -238,7 +237,7 @@ func (p *Parser) GetHelp() string {
 			helpLines := wordWrap(help[i], screenWidth-longest)
 			lines = append(lines, helpLines[0], "\n")
 			if len(helpLines) > 1 {
-				for _, helpLine := range helpLines[1:len(helpLines)] {
+				for _, helpLine := range helpLines[1:] {
 					lines = append(lines, spacer(longest), helpLine, "\n")
 				}
 			}
@@ -258,7 +257,7 @@ func (p *Parser) GetVersion() string {
 	return p.ProgramName + " version " + p.VersionDesc
 }
 
-// Parser accepts a slice of strings as options and arguments to be parsed. The
+// Parse accepts a slice of strings as options and arguments to be parsed. The
 // parser will call each encountered option's action. Unexpected options will
 // cause an error. All errors are returned.
 func (p *Parser) Parse(allArgs ...string) {
@@ -283,7 +282,7 @@ func (p *Parser) Parse(allArgs ...string) {
 			}
 			if allArgs[0] == name {
 				if len(allArgs) > 0 {
-					allArgs = allArgs[1:len(allArgs)]
+					allArgs = allArgs[1:]
 				} else {
 					allArgs = []string{}
 				}
@@ -293,18 +292,18 @@ func (p *Parser) Parse(allArgs ...string) {
 			}
 		}
 
-		if usedParser != true {
+		if !usedParser {
 			p.Callback(p, p.Namespace, nil, MissingParserErr{p.Parsers})
 			return
 		}
 	}
 
 	for _, option := range p.Options {
-		if option.IsRequired == true {
+		if option.IsRequired {
 			requiredOptions[option.DestName] = option
 		}
 
-		if isEnvVarFormat(option.DefaultVal) == true {
+		if isEnvVarFormat(option.DefaultVal) {
 			defVal, err := getEnvVar(option.DefaultVal)
 			if err != nil {
 				p.Callback(p, p.Namespace, allArgs, err)
@@ -326,10 +325,10 @@ func (p *Parser) Parse(allArgs ...string) {
 		var option *Option
 
 		for _, f := range p.Options {
-			if f.IsPositional == true {
+			if f.IsPositional {
 				continue
 			}
-			if f.IsPublicName(optionName) == true {
+			if f.IsPublicName(optionName) {
 				if _, ok := requiredOptions[f.DisplayName()]; ok {
 					delete(requiredOptions, f.DisplayName())
 				} else if _, ok := remainderOptions[f.DisplayName()]; ok {
@@ -362,7 +361,7 @@ func (p *Parser) Parse(allArgs ...string) {
 	}
 
 	for _, f := range p.Options {
-		if f.IsPositional == false {
+		if !f.IsPositional {
 			continue
 		}
 		if _, ok := requiredOptions[f.DestName]; ok {
