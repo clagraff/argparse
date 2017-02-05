@@ -264,6 +264,7 @@ func (p *Parser) Parse(allArgs ...string) {
 	if p.Namespace == nil {
 		p.Namespace = NewNamespace()
 	}
+
 	requiredOptions := make(map[string]*Option)
 	remainderOptions := make(map[string]*Option)
 	var err error
@@ -311,7 +312,11 @@ func (p *Parser) Parse(allArgs ...string) {
 			}
 			p.Namespace.Set(option.DestName, defVal)
 		} else {
-			p.Namespace.Set(option.DestName, option.DefaultVal)
+			if option.DesiredAction == Append || option.DesiredAction == AppendConst {
+				p.Namespace.Set(option.DestName, []string)
+			} else {
+				p.Namespace.Set(option.DestName, option.DefaultVal)
+			}
 		}
 		if strings.ToLower(option.ArgNum) == "r" {
 			remainderOptions[option.DisplayName()] = option
@@ -367,9 +372,11 @@ func (p *Parser) Parse(allArgs ...string) {
 		if _, ok := requiredOptions[f.DestName]; ok {
 			delete(requiredOptions, f.DestName)
 		}
+
 		args, err = f.DesiredAction(p, f, args...)
-		p.Callback(p, p.Namespace, args, err)
-		return
+		if err != nil {
+			p.Callback(p, p.Namespace, args, err)
+		}
 	}
 
 	if len(requiredOptions) != 0 {
