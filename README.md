@@ -1,11 +1,15 @@
 # argparse
 ## Project Status
 
-### No Longer Supported.
+### ⚠️ No Longer Supported ⚠️
 There are a variety of Golang command-line libraries currently available.
 Right now development on argparse has stagnated. I am planning on revamp the library to attempt to bring it back to its roots, as well as improve the underlying code.
 
-⚠️ **For now, though, I would suggest not using this library.** Try one of the libraries here, instead: https://github.com/avelino/awesome-go#command-line
+Try one of the libraries here, instead: https://github.com/avelino/awesome-go#command-line
+
+---
+---
+---
 
 [![CircleCI](https://circleci.com/gh/clagraff/argparse/tree/develop.svg?style=svg)](https://circleci.com/gh/clagraff/argparse/tree/develop)
 [![GoDoc](https://godoc.org/github.com/clagraff/argparse?status.svg)](https://godoc.org/github.com/clagraff/argparse)
