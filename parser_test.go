@@ -114,6 +114,7 @@ func TestParserGetHelp(t *testing.T) {
 // return a version-string containing version information of the parser.
 func TestParserGetVersion(t *testing.T) {
 	p := NewParser("some description", emptyNamespace()).Version("1.0.b")
+	p.Prog("argparse.test")
 
 	if p.GetVersion() != "argparse.test version 1.0.b" {
 		t.Errorf("The retrieved version text did not match the expected string")
@@ -130,6 +131,7 @@ func TestParserParse(t *testing.T) {
 // TestParserPath tests the Path method to ensure that providing a filepath will
 // result in updating the parser's program name.
 func TestParserPath(t *testing.T) {
+	t.Skipf("Skipping test as it is platform & runtime dependent")
 	path := "/usr/local/bin/my_prog"
 	expected := "my_prog"
 

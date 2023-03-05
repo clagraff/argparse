@@ -174,6 +174,13 @@ func TestOptionDisplayName(t *testing.T) {
 		t.Errorf("DisplayName '%s' does not match the expected: '%s'", name, expected)
 	}
 
+	f.PublicNames = []string{"G"}
+	expected = "G"
+	name = f.Positional().DisplayName()
+	if name != expected {
+		t.Errorf("DisplayName '%s' does not match the expected: '%s'", name, expected)
+	}
+
 	f.PublicNames = []string{"foobar"}
 	expected = "foobar"
 	name = f.Positional().DisplayName()

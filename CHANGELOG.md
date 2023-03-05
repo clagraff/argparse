@@ -19,6 +19,9 @@ stable or develoment versions.
 - Fixing vetting issues in the codebase, including simplifying the code, adding
 comments, and formatting issues.
 
+### Fixed
+- Fixed case-sensitive bug with `Option.DisplayName()`.
+
 ## [v1.0.1]
 ## Fixed 
 - Added missing return after executing callback for options.

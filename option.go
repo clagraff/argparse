@@ -94,11 +94,11 @@ func NewOption(names, dest, help string) *Option {
 //
 // An example of using these functions can be seen below:
 //
-//		o := argparse.NewOption("-o", "output", "Enable output")
-//		o.Positional().Required().Nargs("0").Action(StoreTrue).Default("false")
+//	o := argparse.NewOption("-o", "output", "Enable output")
+//	o.Positional().Required().Nargs("0").Action(StoreTrue).Default("false")
 //
-//		f := argparse.NewFlag("-n --dry", "dryRun", "Enable dry-run mode")
-//		a := argparse.NewArg("--in", "inputPath", "Path to specified input file")
+//	f := argparse.NewFlag("-n --dry", "dryRun", "Enable dry-run mode")
+//	a := argparse.NewArg("--in", "inputPath", "Path to specified input file")
 type Option struct {
 	ArgNum        string       // Any digit, "+", "?", "*", or "r" and "R" to represent how many arguments an option can expect.
 	ConstVal      string       // A constant value to represent when used with the actions.StoreConst action.
@@ -161,7 +161,7 @@ func (f *Option) DisplayName() string {
 			}
 		}
 
-		return join("", prefix, strings.ToLower(name))
+		return join("", prefix, name)
 	}
 
 	var names []string
