@@ -27,7 +27,7 @@ func Store(p *Parser, f *Option, args ...string) ([]string, error) {
 			p.Namespace.Set(f.DestName, args[0])
 			return args[1:], nil
 		}
-	} else if strings.ContainsAny(f.ArgNum, "*+rR") == true {
+	} else if strings.ContainsAny(f.ArgNum, "*+rR") {
 		if f.ArgNum == "+" && len(args) == 0 {
 			return args, TooFewArgsErr{*f}
 		}
@@ -44,14 +44,13 @@ func Store(p *Parser, f *Option, args ...string) ([]string, error) {
 
 		p.Namespace.Set(f.DestName, values)
 		return args, nil
-	} else if regexp.MustCompile(`^[1-9]+$`).MatchString(f.ArgNum) == true {
+	} else if regexp.MustCompile(`^[1-9]+$`).MatchString(f.ArgNum) {
 		num, _ := strconv.Atoi(f.ArgNum)
 		if len(args) < num {
-			if f.IsRequired == true {
+			if f.IsRequired {
 				return args, TooFewArgsErr{*f}
-			} else {
-				return args, nil
 			}
+			return args, nil
 		}
 
 		if num > 1 {
@@ -124,7 +123,7 @@ func StoreTrue(p *Parser, f *Option, args ...string) ([]string, error) {
 // and appends them individually into the parser. Remaining arguments and errors are returned.
 func Append(p *Parser, f *Option, args ...string) ([]string, error) {
 	appendValue := func(p *Parser, f *Option, value interface{}) error {
-		if p.Namespace.KeyExists(f.DestName) == false {
+		if !p.Namespace.KeyExists(f.DestName) {
 			p.Namespace.Set(f.DestName, make([]string, 0))
 		}
 		slice, err := p.Namespace.Try(f.DestName)
@@ -136,7 +135,7 @@ func Append(p *Parser, f *Option, args ...string) ([]string, error) {
 		return nil
 	}
 
-	if regexp.MustCompile(`^[1-9]+$`).MatchString(f.ArgNum) == true {
+	if regexp.MustCompile(`^[1-9]+$`).MatchString(f.ArgNum) {
 		num, _ := strconv.Atoi(f.ArgNum)
 		if len(args) < num {
 			return args, TooFewArgsErr{*f}
@@ -155,7 +154,18 @@ func Append(p *Parser, f *Option, args ...string) ([]string, error) {
 		}
 		return args, nil
 	} else if f.ArgNum == "0" {
-		appendValue(p, f, f.DefaultVal)
+		if isEnvVarFormat(f.DefaultVal) {
+			var (
+				defVal string
+				err    error
+			)
+			if defVal, err = getEnvVar(f.DefaultVal); err != nil {
+				return args, err
+			}
+			appendValue(p, f, defVal)
+		} else {
+			appendValue(p, f, f.DefaultVal)
+		}
 		return args, nil
 	} else if f.ArgNum == "?" {
 		if len(args) > 0 {
@@ -167,9 +177,20 @@ func Append(p *Parser, f *Option, args ...string) ([]string, error) {
 			appendValue(p, f, args[0])
 			args = args[1:]
 		} else {
-			appendValue(p, f, f.DefaultVal)
+			if isEnvVarFormat(f.DefaultVal) {
+				var (
+					defVal string
+					err    error
+				)
+				if defVal, err = getEnvVar(f.DefaultVal); err != nil {
+					return args, err
+				}
+				appendValue(p, f, defVal)
+			} else {
+				appendValue(p, f, f.DefaultVal)
+			}
 		}
-	} else if strings.ContainsAny(f.ArgNum, "*+rR") == true {
+	} else if strings.ContainsAny(f.ArgNum, "*+rR") {
 		if f.ArgNum == "+" && len(args) == 0 {
 			return args, MissingOneOrMoreArgsErr{*f}
 		}
@@ -197,7 +218,7 @@ func AppendConst(p *Parser, f *Option, args ...string) ([]string, error) {
 		panic(fmt.Sprintf("option '%s' cannot expect any arguments.", f.DisplayName()))
 	}
 
-	if p.Namespace.KeyExists(f.DestName) == false {
+	if !p.Namespace.KeyExists(f.DestName) {
 		p.Namespace.Set(f.DestName, make([]string, 0))
 	}
 	slice, err := p.Namespace.Try(f.DestName)

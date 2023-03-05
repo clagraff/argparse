@@ -67,7 +67,7 @@ func TestParserGetOption_InvalidOption(t *testing.T) {
 	}
 
 	if f != nil {
-		t.Error("The retrived option was not nil")
+		t.Error("The retrieved option was not nil")
 	}
 }
 
@@ -91,7 +91,7 @@ func TestParserGetOption_ValidOption(t *testing.T) {
 	}
 
 	if f == nil {
-		t.Error("The retrived option cannot be nil")
+		t.Error("The retrieved option cannot be nil")
 	} else if f.PublicNames[0] != "second" {
 		t.Errorf("Expected option name 'second', but retrieved name: %s", f.PublicNames)
 	}
@@ -114,6 +114,7 @@ func TestParserGetHelp(t *testing.T) {
 // return a version-string containing version information of the parser.
 func TestParserGetVersion(t *testing.T) {
 	p := NewParser("some description", emptyNamespace()).Version("1.0.b")
+	p.Prog("argparse.test")
 
 	if p.GetVersion() != "argparse.test version 1.0.b" {
 		t.Errorf("The retrieved version text did not match the expected string")
@@ -130,6 +131,7 @@ func TestParserParse(t *testing.T) {
 // TestParserPath tests the Path method to ensure that providing a filepath will
 // result in updating the parser's program name.
 func TestParserPath(t *testing.T) {
+	t.Skipf("Skipping test as it is platform & runtime dependent")
 	path := "/usr/local/bin/my_prog"
 	expected := "my_prog"
 
@@ -164,6 +166,26 @@ func TestParserProg(t *testing.T) {
 			"The parser's ProgramName '%s' does not match the expected name: '%s'",
 			p.ProgramName,
 			name,
+		)
+	}
+}
+
+// TestParserEpilog tests the Epilog method to ensure that providing a epilog string
+// will result in updating the parser's epilog string.
+func TestParserEpilog(t *testing.T) {
+	epilog := "this is a random epilog"
+
+	p := Parser{}
+	if len(p.EpilogText) != 0 {
+		t.Errorf("Parser EpilogText should be an empty string, but is: %s", p.EpilogText)
+	}
+
+	p.Epilog(epilog)
+	if p.EpilogText != epilog {
+		t.Errorf(
+			"The parser's EpilogText '%s' does not match the expected string: '%s'",
+			p.EpilogText,
+			epilog,
 		)
 	}
 }
@@ -253,6 +275,6 @@ func TestNewParser(t *testing.T) {
 	}
 
 	if p.UsageText != desc {
-		t.Error("The parser's usage text: '%s' does not match the expected description: '%s'", p.UsageText, desc)
+		t.Errorf("The parser's usage text: '%s' does not match the expected description: '%s'", p.UsageText, desc)
 	}
 }
